@@ -11,9 +11,45 @@ import ketu
 import urllib2
 import sys
 from astropy.io import fits
-from eliminate_eclipses import *
 
-def getQuery(epicID, campaign):
+def build_query(epicID, campaign, time_spacing=0.02, durations=[0.05,0.1,0.2]\
+  min_period = 0.5,max_period=70.0,npeaks=3,path="DEFAULT",fn="DEFAULT"):
+    '''Allows the construction of a customized query
+        Key-words:
+            epicID--the designation for your object
+            campaign--which K2 campaign the object is in
+            time_spacing--the grid resolution in days
+            durations--the tranist durations in days to test
+            min_period--the minimum period in days to test
+            max_period--the maximum period in days to test
+            npeaks--the number of peaks to determine
+            path--the path to the lightcurve, if default use /k2_data
+            fn--the filename of the lightcurve, if default us /k2_data
+    '''
+    campaign = str(campaign)
+    if path == "DEFAULT":
+        path = "/k2_data/lightcurves/" + "c"+campaign + "/" + \
+           epicID[0:4] + "0000/" + epicID[4:6] + "000/"
+	else: 
+        path = path
+    if fn == "DEFAULT":
+        fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc.fits"
+    else:
+        fn = fn
+	q = dict(
+        light_curve_file=path+fn,
+        basis_file = "/k2_data/elcs/c" + campaign + ".h5",
+        nbasis = 150,
+        catalog_file = "/k2_data/catalogs/epic.h5", 
+        time_spacing = time_spacing,
+        durations = durations,
+        min_period = min_period,
+        max_period = max_period, 
+        npeaks = npeaks,
+    )
+    return q
+
+def get_query(epicID, campaign):
     '''Format a default query for the ketu pipeline'''
     campaign = str(campaign)
     path = "/k2_data/lightcurves/" + "c" + campaign + "/" +  epicID[0:4] + "00000/" + epicID[4:6] + "000/"  
