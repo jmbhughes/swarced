@@ -13,7 +13,7 @@ import sys
 from astropy.io import fits
 
 def build_query(epicID, campaign, time_spacing=0.02, durations=[0.05,0.1,0.2]\
-  min_period = 0.5,max_period=70.0,npeaks=3,path="DEFAULT",fn="DEFAULT"):
+ ,min_period = 0.5,max_period=70.0,npeaks=3,path="DEFAULT",fn="DEFAULT"):
     '''Allows the construction of a customized query
         Key-words:
             epicID--the designation for your object
@@ -26,11 +26,11 @@ def build_query(epicID, campaign, time_spacing=0.02, durations=[0.05,0.1,0.2]\
             path--the path to the lightcurve, if default use /k2_data
             fn--the filename of the lightcurve, if default us /k2_data
     '''
-    campaign = str(campaign)
+    epicID, campaign = str(epicID), str(campaign)
     if path == "DEFAULT":
-        path = "/k2_data/lightcurves/" + "c"+campaign + "/" + \
-           epicID[0:4] + "0000/" + epicID[4:6] + "000/"
-	else: 
+        path = "/k2_data/lightcurves/" + "c" + campaign + "/"
+        path = path + epicID[0:4] + "0000/" + epicID[4:6] + "000/"
+    else:
         path = path
     if fn == "DEFAULT":
         fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc.fits"
