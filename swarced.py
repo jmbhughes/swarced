@@ -61,7 +61,6 @@ def get_query(epicID, campaign):
         basis_file= "/k2_data/elcs/c1.h5",
         nbasis=150,
         catalog_file= "/k2_data/catalogs/epic.h5",
-        #time_spacing=0.02,
         time_spacing=0.1,
         durations=[0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
         min_period=4.0,
@@ -77,48 +76,19 @@ def get_query(epicID, campaign):
         q['basis_file'] = "/k2_data/elcs/c?-norm.h5"
     return q
 
-def getEBQuery(epicID, campaign):
-    '''Format a default query for the ketu pipeline'''
-    campaign = str(campaign)
-    folder = "/k2_data/eb_removed/"
-    q = dict(
-        light_curve_file = folder + "ktwo" + epicID + "-c0" + campaign + "_lpd-lc.fits",
-        #target_pixel_file="fm15_ag/dat/ktwo" + epicID + "-c0" + campaign + "_lpd-targ.fits.gz",
-       #initial_time=1975.,
-        basis_file= "/k2_data/elcs/c0.h5",
-        nbasis=150,
-        catalog_file= "/k2_data/catalogs/epic.h5",
-        time_spacing=0.1,
-        durations=[0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-        min_period= 4.0,
-        max_period=70.0,
-        npeaks=3,
-    )
-    #if campaign == "0":
-    #    q['basis_file'] = folder + "c0.h5"
-    #elif campaign == "2":
-    #    q['basis_file'] = folder + "c2-norm.h5"
-    #else:
-    #    q['basis_file'] = folder + "c?-norm.h5"
-    return q
-
-
 def analyze(query):
     '''Pass a target through the ketu pipeline
     Key Terms:
-    epicID--a string indicating the EPIC ID of the chosen target
-    campaign--a string indicating which campaign of K2 data this target is in
-    
+    query-- a dictionary with query terms from either build_query or get_query
     Return:
     A pipeline result object for examination
     '''
-    #query = getQuery(epicID,campaign)
     pipe = ketu.k2.Data(basepath="/k2_data/eb_removed/cache/")
     pipe = ketu.k2.Likelihood(pipe)
     pipe = ketu.OneDSearch(pipe)
-    pipe = ketu.IterativeTwoDSearch(pipe)
-    #pipe = ketu.TwoDSearch(pipe)
-    result = pipe.query(**query)
+    pipe = ketu.TwoDSearch(pipe)
+    pipe = ketu.PeakDetect(pipe)
+    result = pipe.query(**pipeline.getQuery(str(epicid),"0"))
     return result
 
 def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/"):
