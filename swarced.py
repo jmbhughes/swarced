@@ -51,7 +51,11 @@ def build_query(epicID, campaign, time_spacing=0.02, durations=[0.05,0.1,0.2]\
     return q
 
 def get_query(epicID, campaign):
-    '''Format a default query for the ketu pipeline'''
+    '''Format a default query for the ketu pipeline
+    key-words:
+        epicID---the EPIC designation for your target
+        campaign---the K2 campaign of that EPIC designation
+    '''
     epicID, campaign = str(epicID), str(campaign)
     path = "/k2_data/lightcurves/" + "c" + campaign + "/" 
     path += epicID[0:4] + "00000/" + epicID[4:6] + "000/"  
@@ -75,12 +79,14 @@ def get_query(epicID, campaign):
     return q
 
 def save_query(query, f):
+    '''Saves a query in a pickled format with name f'''
     pickle.dump(query, f)
 
 def analyze(query,cache=False):
     '''Pass a target through the ketu pipeline
     Key Terms:
     query-- a dictionary with query terms from either build_query or get_query
+    cache-- if False does not cache, otherwise designate directory to cache at
     Return:
     A pipeline result object for examination
     '''
@@ -113,7 +119,7 @@ def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/"):
     return f[1].data['time'] + f[1].header['BJDREFI'],f[1].data['flux']
 
 def edit(mask, epicID, campaign, inpath="/k2_data/lightcurves/", outpath="/k2_data/eb_removed/"):
-    '''Allows one to directly alter a lightcurve by applying a mask to a K2 lightcurve'''
+    '''Allows direct alteration of a lightcurve by applying a mask to a K2 lightcurve'''
     epicID, campaign = str(epicID),str(campaign)
     if inpath == "/k2_data/lightcurves/":
         path = inpath + "c" + campaign + "/" +  epicID[0:4] + "00000/" + epicID[4:6] + "000/" 
@@ -126,6 +132,7 @@ def edit(mask, epicID, campaign, inpath="/k2_data/lightcurves/", outpath="/k2_da
     return
 
 def plot_periodogram(result):
+    '''Given a peak_detect result object will plot the phic periodgram'''
     #This plots the more reliable phic periodogram as calculated in the full 2-d search
     fig = pl.figure(figsize=(10, 4))
     ax = fig.add_subplot(111)
