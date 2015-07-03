@@ -1,2 +1,2 @@
 # swarced
-Swarthmore Astronomy REU Circumbinary Exploration and Discovery
+Swarthmore Astronomy REU Circumbinary (planet)  Exploration and Discovery
