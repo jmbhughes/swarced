@@ -24,7 +24,7 @@ p5
 I150
 sS'light_curve_file'
 p6
-S'/k2_data/lightcurves/c0/202000000/73000/ktwo202073117-c00_lpd-lc.fits'
+S'/Users/mhughes/swarced/lcs/ktwo202073117-c00_lpd-lc.fits'
 p7
 sS'initial_time'
 p8
@@ -34,10 +34,10 @@ p9
 F0.5
 sS'basis_file'
 p10
-S'/k2_data/elcs/c0.h5'
+S'/Users/mhughes/Desktop/c0.h5'
 p11
 sS'catalog_file'
 p12
-S'/k2_data/catalogs/epic.h5'
+S'/Users/mhughes/Desktop/epic.h5'
 p13
 s.
