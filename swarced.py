@@ -86,13 +86,17 @@ def analyze(query,cache=False):
     '''
     if cache == False:
         pipe = ketu.k2.Data(cache=False)
+        pipe = ketu.k2.Likelihood(pipe,cache=False)
+        pipe = ketu.OneDSearch(pipe,cache=False)
+        pipe = ketu.TwoDSearch(pipe,cache=False)
+        pipe = ketu.PeakDetect(pipe,cache=False)
     else:
         pipe = ketu.k2.Data(basepath=cache)
-    pipe = ketu.k2.Likelihood(pipe)
-    pipe = ketu.OneDSearch(pipe)
-    pipe = ketu.TwoDSearch(pipe)
-    pipe = ketu.PeakDetect(pipe)
-    print(query)
+        pipe = ketu.k2.Likelihood(pipe)
+        pipe = ketu.OneDSearch(pipe)
+        pipe = ketu.TwoDSearch(pipe)
+        pipe = ketu.PeakDetect(pipe)
+    #print(query)
     result = pipe.query(**query)
     return result
 
