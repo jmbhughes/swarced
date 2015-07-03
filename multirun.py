@@ -14,7 +14,7 @@ epicID in each location or else it will be overwritten!
 
 def main(argv):
     query_dir = argv[0]
-    print(query_dir)
+    #print(query_dir)
     qlist = os.listdir(query_dir)
     args = [[fn[4:-2],0,query_dir + fn] for fn in qlist]
     pool = mp.Pool(processes=6)

@@ -16,9 +16,9 @@ def main(argv):
     epicID, campaign, query_path = argv
     epicID, campaign = str(epicID), str(campaign)
     query = pickle.load(open(query_path, 'r'))
-    result = swarced.analyze(query)
-    out_path = "/".join(query_path.split('/')[:-1]) + "k2_epic" + epicID + ".result",
-    pickle.dump(result.response, open(out_path, 'wb')
+    result = swarced.analyze(query, cache="/k2_data/test_cache/")
+    out_path = "/".join(query_path.split('/')[:-1]) + "k2_epic" + epicID + ".result"
+    pickle.dump(result.response, open(out_path, 'wb'))
     #pickle.dump(result.response, open("/k2_data/result/k2_epic" + epicID + ".pkl", "wb"))
 
 if __name__ == "__main__":
