@@ -170,9 +170,10 @@ def plot_phase(epicID,campaign,period, t0):
     pl.ylabel("FM15 Flux")
     pl.show()
     
-def plot_lc(epicID, campaign):
+def plot_lc(epicID, campaign,inpath=inpath):
+    '''Plots the best lightcurve from photometry'''
     epicID,campaign = str(epicID),str(campaign)
-    time, flux = retrieve(epicID,campaign)
+    time, flux = retrieve(epicID,campaign,inpath)
     fig = pl.figure(figsize=(5 * 1.61803398875,5))
     pl.title("EPIC " + epicID)
     pl.plot(time,flux,'k.',ms=10)
