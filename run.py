@@ -18,6 +18,7 @@ def main(argv):
     query = pickle.load(open(query_path, 'r'))
     result = swarced.analyze(query, cache=False)
     out_path = "/".join(query_path.split('/')[:-1]) + "/k2_epic" + epicID + ".result"
+    print(out_path)
     pickle.dump(result.response, open(out_path, 'wb'))
     #pickle.dump(result.response, open("/k2_data/result/k2_epic" + epicID + ".pkl", "wb"))
 
