@@ -123,6 +123,8 @@ def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/"):
     time, flux = f[1].data['time'] + f[1].header['BJDREFI'], f[1].data['flux'][:,aperture]
     quality = f[1].data['quality']
     m = np.isfinite(time) * np.isfinite(flux) * (quality==0)
+    f.close()
+    print(len(time), sum(m), len(time[m]))
     return time[m], flux[m]
 
 def edit(mask, epicID, campaign, inpath="/k2_data/lightcurves/", outpath="/k2_data/eb_removed/"):
@@ -137,6 +139,7 @@ def edit(mask, epicID, campaign, inpath="/k2_data/lightcurves/", outpath="/k2_da
     #apply the mask to all the columns
     f[1].data = f[1].data[mask]
     f.writeto(outpath + fn, clobber=True)
+    f.close()
     return
 
 def plot_periodogram(result):
@@ -147,7 +150,7 @@ def plot_periodogram(result):
     parent_response = result.response
     peaks = parent_response['peaks']
     x = parent_response['periods']
-    y = parent_response['phic_scale']/100
+    y = parent_response['phic_scale']
     m = np.isfinite(y)
     ax.plot(x[m], y[m], "k")
     pl.xticks(np.arange(2,30,2))
@@ -159,9 +162,9 @@ def plot_periodogram(result):
                     xytext=(10, 5), textcoords="offset points")
     pl.show()
     
-def plot_phase(epicID,campaign,period, t0):
+def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/"):
     epicID,campaign = str(epicID),str(campaign)
-    time, flux = retrieve(epicID,campaign)
+    time, flux = retrieve(epicID,campaign,inpath)
     fig = pl.figure(figsize=(5 * 1.61803398875,5))
     pl.title("EPIC " + epicID)
     phase = remEB.find_phase(time, period, t0)
@@ -170,7 +173,7 @@ def plot_phase(epicID,campaign,period, t0):
     pl.ylabel("FM15 Flux")
     pl.show()
     
-def plot_lc(epicID, campaign,inpath=inpath):
+def plot_lc(epicID, campaign,inpath="/k2_data/lightcurves/",mark_list=[]):
     '''Plots the best lightcurve from photometry'''
     epicID,campaign = str(epicID),str(campaign)
     time, flux = retrieve(epicID,campaign,inpath)
@@ -179,4 +182,5 @@ def plot_lc(epicID, campaign,inpath=inpath):
     pl.plot(time,flux,'k.',ms=10)
     pl.xlabel("Time (BJD)")
     pl.ylabel("FM15 Flux")
+    pl.plot(mark_list, np.median(flux) + np.zeros(len(mark_list)),'r*',markersize=20)
     pl.show()
