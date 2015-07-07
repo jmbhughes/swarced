@@ -107,6 +107,21 @@ def analyze(query,cache=False):
     result = pipe.query(**query)
     return result
 
+def clean(epicID, campaign, inpath="/k2_data/lighcurves"):
+    fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc.fits"
+    f = fits.open(path + fn, mode='update')
+    phase = remEB.find_phase(f[1].data['time']+f[1].header['BJDREFI'], period, center )
+    mask = remEB.clip_eclipses(phase, period, sep, pwid, swid)
+    mask = mask * ((f[1].data['time'] +f[1].header['BJDREFI'])> 2.45672e6 + 50)
+    f[1].data['quality'][np.logical_not(mask)]= 16384
+    f.flush()
+    f.close()
+    f = fits.open(path + fn, 'update')
+    m = (f[1].data['quality'] == 0 )
+    f[1].data = f[1].data[m]
+    f.flush()
+    f.close()
+    
 def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/"):
     '''Provides access to the time and flux data from a light curve given the EPIC ID and campaign'''
     campaign = str(campaign)
@@ -153,16 +168,20 @@ def plot_periodogram(result):
     y = parent_response['phic_scale']
     m = np.isfinite(y)
     ax.plot(x[m], y[m], "k")
-    pl.xticks(np.arange(2,30,2))
-    pl.xlim([0,30])
+    #pl.xticks(np.arange(2,30,2))
+    pl.title("EPIC "+ str(int(result.parent_response.parent_response.parent_response.parent_response.response['epic']['epic_number'])))
+    #pl.xlim([0,30])
+    pl.xlabel("Period (Days)")
+    pl.ylabel("Strength of response (scaled phic)")
     for i, peak in enumerate(peaks):
-        x0, y0 = peak["period"], peak["phic_norm"]/100
+        x0, y0 = peak["period"], peak["phic_norm"]
         ax.plot(x0, y0, ".r")
         ax.annotate("{0:.2f}".format(x0), xy=(x0, y0), ha="center",fontsize=10,
                     xytext=(10, 5), textcoords="offset points")
     pl.show()
     
 def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/"):
+    '''Plots a period folded curve'''
     epicID,campaign = str(epicID),str(campaign)
     time, flux = retrieve(epicID,campaign,inpath)
     fig = pl.figure(figsize=(5 * 1.61803398875,5))
