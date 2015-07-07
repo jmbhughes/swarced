@@ -107,21 +107,18 @@ def analyze(query,cache=False):
     result = pipe.query(**query)
     return result
 
-def clean(epicID, campaign, inpath="/k2_data/lighcurves"):
+def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/lighcurves"):
     fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc.fits"
     f = fits.open(path + fn, mode='update')
     phase = remEB.find_phase(f[1].data['time']+f[1].header['BJDREFI'], period, center )
     mask = remEB.clip_eclipses(phase, period, sep, pwid, swid)
     mask = mask * ((f[1].data['time'] +f[1].header['BJDREFI'])> 2.45672e6 + 50)
     f[1].data['quality'][np.logical_not(mask)]= 16384
-    f.flush()
-    f.close()
-    f = fits.open(path + fn, 'update')
     m = (f[1].data['quality'] == 0 )
     f[1].data = f[1].data[m]
     f.flush()
     f.close()
-    
+        
 def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/"):
     '''Provides access to the time and flux data from a light curve given the EPIC ID and campaign'''
     campaign = str(campaign)
