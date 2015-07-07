@@ -5,7 +5,7 @@ rcParams["font.size"] = 10
 import numpy as np
 import matplotlib.pyplot as pl
 from matplotlib.ticker import MaxNLocator
-import ketu, urllib2, sys, pickle, transit, h5py
+import ketu, urllib2, sys, pickle, transit, h5py, shutil
 from astropy.io import fits
 import remove_EB as remEB
 
@@ -109,7 +109,9 @@ def analyze(query,cache=False):
 
 def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/lighcurves"):
     fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc.fits"
-    f = fits.open(path + fn, mode='update')
+    newfn = fn.split(".")[0] + "_clip.fits"
+    shutil.copy(inpath + fn, inpath + newfn)
+    f = fits.open(inpath + newfn, mode='update')
     phase = remEB.find_phase(f[1].data['time']+f[1].header['BJDREFI'], period, center )
     mask = remEB.clip_eclipses(phase, period, sep, pwid, swid)
     mask = mask * ((f[1].data['time'] +f[1].header['BJDREFI'])> 2.45672e6 + 50)
