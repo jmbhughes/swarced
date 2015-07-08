@@ -16,11 +16,12 @@ def main(argv):
     query_dir = argv[0]
     #print(query_dir)
     qlist = os.listdir(query_dir)
+    qlist = [fn for fn in qlist if (".query" in fn)]
     args = [[fn[4:-2],0,query_dir + fn] for fn in qlist]
-    pool = mp.Pool(processes=6)
+    pool = mp.Pool(processes=4)
     pool.map(run.main, args)
     pool.close()
     pool.join()
-
+        
 if __name__ == "__main__":
     main(sys.argv[1:])

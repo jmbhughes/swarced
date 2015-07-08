@@ -17,8 +17,12 @@ def main(argv):
     epicID, campaign = str(epicID), str(campaign)
     query = pickle.load(open(query_path, 'r'))
     result = swarced.analyze(query, cache=False)
-    out_path = "/".join(query_path.split('/')[:-1]) + "/k2_epic" + epicID + ".result"
+    out_path = "/".join(query_path.split("/")[:-1]) + "/" + query_path.split("/")[-1:][0].split(".")[0] + ".result"
     print(out_path)
+    print("reached")
+    #out_path = query_path.split("/")[-1:][0].split(".")[0] + ".result"
+    #out_path = "/".join(query_path.split('/')[:-1]) + "/ktwo" + epicID + ".result"
+    #print(out_path)
     pickle.dump(result.response, open(out_path, 'wb'))
     #pickle.dump(result.response, open("/k2_data/result/k2_epic" + epicID + ".pkl", "wb"))
 

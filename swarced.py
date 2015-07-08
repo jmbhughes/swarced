@@ -107,8 +107,8 @@ def analyze(query,cache=False):
     result = pipe.query(**query)
     return result
 
-def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/lighcurves"):
-    fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc.fits"
+def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/lighcurves",tail=""):
+    fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
     newfn = fn.split(".")[0] + "_clip.fits"
     shutil.copy(inpath + fn, inpath + newfn)
     f = fits.open(inpath + newfn, mode='update')
