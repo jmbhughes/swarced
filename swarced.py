@@ -121,7 +121,7 @@ def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/li
     f.flush()
     f.close()
         
-def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/"):
+def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/", tail="", injected=False):
     '''Provides access to the time and flux data from a light curve given the EPIC ID and campaign'''
     campaign = str(campaign)
     epicID = str(epicID)
@@ -131,15 +131,19 @@ def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/"):
     else:#designate the full path
         path = inpath
     #construct the filename
-    fn = path + "ktwo" + epicID + "-c0" + campaign + "_lpd-lc.fits"
+    fn = path + "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
     f = fits.open(fn)
     aperture = np.argmin(f[2].data['cdpp6'])
     time, flux = f[1].data['time'] + f[1].header['BJDREFI'], f[1].data['flux'][:,aperture]
     quality = f[1].data['quality']
     m = np.isfinite(time) * np.isfinite(flux) * (quality==0)
+    if injected:
+        transits = list(f[3].data['center'] + f[1].header['BJDREFI'])
     f.close()
-    print(len(time), sum(m), len(time[m]))
-    return time[m], flux[m]
+    if not injected:
+        return time[m], flux[m]
+    else: #was injected
+        return time[m], flux[m], transits
 
 def edit(mask, epicID, campaign, inpath="/k2_data/lightcurves/", outpath="/k2_data/eb_removed/"):
     '''Allows direct alteration of a lightcurve by applying a mask to a K2 lightcurve'''
@@ -179,10 +183,10 @@ def plot_periodogram(result):
                     xytext=(10, 5), textcoords="offset points")
     pl.show()
     
-def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/"):
+def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/",tail=""):
     '''Plots a period folded curve'''
     epicID,campaign = str(epicID),str(campaign)
-    time, flux = retrieve(epicID,campaign,inpath)
+    time, flux = retrieve(epicID,campaign,inpath,tail)
     fig = pl.figure(figsize=(5 * 1.61803398875,5))
     pl.title("EPIC " + epicID)
     phase = remEB.find_phase(time, period, t0)
@@ -191,14 +195,22 @@ def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/"):
     pl.ylabel("FM15 Flux")
     pl.show()
     
-def plot_lc(epicID, campaign,inpath="/k2_data/lightcurves/",mark_list=[]):
+def plot_lc(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="",injected=False):
     '''Plots the best lightcurve from photometry'''
     epicID,campaign = str(epicID),str(campaign)
-    time, flux = retrieve(epicID,campaign,inpath)
+    if not injected:
+        time, flux = retrieve(epicID,campaign,inpath,tail)
+    else:
+        time, flux, transits = retrieve(epicID,campaign,inpath,tail,injected=True)
     fig = pl.figure(figsize=(5 * 1.61803398875,5))
     pl.title("EPIC " + epicID)
     pl.plot(time,flux,'k.',ms=10)
     pl.xlabel("Time (BJD)")
     pl.ylabel("FM15 Flux")
     pl.plot(mark_list, np.median(flux) + np.zeros(len(mark_list)),'r*',markersize=20)
+    if injected:
+        pl.plot(transits, np.median(flux) + np.zeros(len(transits)),'r*',markersize=20)
+    pl.ylim(min([np.min(flux),np.median(flux)-0.5*np.std(flux)]), 
+            max([np.max(flux),np.median(flux)+0.5*np.std(flux)]))
     pl.show()
+    del mark_list
