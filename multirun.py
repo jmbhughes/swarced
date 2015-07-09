@@ -17,7 +17,7 @@ def main(argv):
     #print(query_dir)
     qlist = os.listdir(query_dir)
     qlist = [fn for fn in qlist if (".query" in fn)]
-    args = [[fn[4:-2],0,query_dir + fn] for fn in qlist]
+    args = [[fn[4:13],2,query_dir + fn] for fn in qlist]
     pool = mp.Pool(processes=4)
     pool.map(run.main, args)
     pool.close()

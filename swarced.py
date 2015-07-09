@@ -92,11 +92,17 @@ def analyze(query,cache=False):
     A pipeline result object for examination
     '''
     if cache == False:
+        print("reached3")
         pipe = ketu.k2.Data(cache=False)
+        print("reached4")
         pipe = ketu.k2.Likelihood(pipe,cache=False)
+        print("reached5")
         pipe = ketu.OneDSearch(pipe,cache=False)
+        print("reached6")
         pipe = ketu.TwoDSearch(pipe,cache=False)
+        print("reached7")
         pipe = ketu.PeakDetect(pipe,cache=False)
+        print("reached8")
     else:#do cache!
         pipe = ketu.k2.Data(basepath=cache)
         pipe = ketu.k2.Likelihood(pipe)
@@ -105,6 +111,7 @@ def analyze(query,cache=False):
         pipe = ketu.PeakDetect(pipe)
     #print(query)
     result = pipe.query(**query)
+    print("reached9")
     return result
 
 def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/lighcurves",tail=""):
