@@ -1,4 +1,4 @@
-import os, pickle, sys, getopt, swarced
+import os, pickle, sys, getopt, swarced, time
 
 '''You can execute a ketu run from the commandline using this program.
 Runs should be formatted like:
@@ -13,17 +13,14 @@ epicID in each location or else it will be overwritten!
 '''
 
 def main(argv):
+    start = time.time()
     epicID, campaign, query_path = argv
-    print(epicID, campaign, query_path)
     epicID, campaign = str(epicID), str(campaign)
     query = pickle.load(open(query_path, 'r'))
-    print(query)
-    print(type(query))
-    print("reached1")
     result = swarced.analyze(query, cache=False)
-    print("reached2")
     out_path = "/".join(query_path.split("/")[:-1]) + "/" + query_path.split("/")[-1:][0].split(".")[0] + ".result"
     pickle.dump(result.response, open(out_path, 'wb'))
+    return time.time()-start
 
 if __name__ == "__main__":
     main(sys.argv[1:])
