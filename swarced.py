@@ -49,6 +49,25 @@ def build_query(epicID, campaign, time_spacing=0.02, durations=[0.05,0.1,0.2]\
     )
     return q
 
+def get_k2_directory(epicID, campaign, prepend, tail=""):
+    epicID, campaign = str(epicID), str(campaign)
+    path = prepend + "lightcurves/c" + campaign + "/"  + epicID[0:4] + "00000/" + epicID[4:6] + "000/"
+    path += "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
+    return path
+
+def validate_eb(epicid, campaign, result_path):
+    print("-" * 79)
+    result = pickle.load(open(result_path, "r"))
+    #print(result)
+    print("Recovered Period: {0:5.2f}, t0: {5:5.5f}, Depth: {1:5.2f}, Depth_s2n: {2:5.2f}, Depth_var: {3:5.4f}, Phic_same: {4:5.2f}".format(result['peaks'][0]['period'], result['peaks'][0]['depth'],result['peaks'][0]['depth_s2n'], 1/result['peaks'][0]['depth_ivar'],result['peaks'][0]['phic_same'],result['peaks'][0]['t0']))
+    #result['peaks'][0][
+    period, center = result['peaks'][0]['period'], result['peaks'][0]['t0']
+    plot_lc(epicid, campaign)
+    plot_periodogram(epicid, result)
+    phase, flux = plot_phase(epicid,campaign,period,center)
+    print("-" * 79)
+    return phase, flux
+
 def get_query(epicID, campaign):
     '''Format a default query for the ketu pipeline
     key-words:
@@ -160,19 +179,22 @@ def edit(mask, epicID, campaign, inpath="/k2_data/lightcurves/", outpath="/k2_da
     f.close()
     return
 
-def plot_periodogram(result):
+def plot_periodogram(epic, result,pickled=True):
     '''Given a peak_detect result object will plot the phic periodgram'''
     #This plots the more reliable phic periodogram as calculated in the full 2-d search
     fig = pl.figure(figsize=(10, 4))
     ax = fig.add_subplot(111)
-    parent_response = result.response
-    peaks = parent_response['peaks']
-    x = parent_response['periods']
-    y = parent_response['phic_scale']
+    if not pickled:
+        response = result.response
+    else:
+        response = result
+    peaks = response['peaks']
+    x, y = response['periods'],response['phic_scale']
     m = np.isfinite(y)
     ax.plot(x[m], y[m], "k")
     #pl.xticks(np.arange(2,30,2))
-    pl.title("EPIC "+ str(int(result.parent_response.parent_response.parent_response.parent_response.response['epic']['epic_number'])))
+    pl.title("EPIC " + str(epic))
+    #pl.title("EPIC "+ str(int(result.parent_response.parent_response.parent_response.parent_response.response['epic']['epic_number'])))
     #pl.xlim([0,30])
     pl.xlabel("Period (Days)")
     pl.ylabel("Strength of response (scaled phic)")
@@ -194,6 +216,7 @@ def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/",tail=
     pl.xlabel("Phase")
     pl.ylabel("FM15 Flux")
     pl.show()
+    return phase, flux
     
 def plot_lc(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="",injected=False):
     '''Plots the best lightcurve from photometry'''

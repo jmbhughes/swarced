@@ -15,9 +15,17 @@ epicID in each location or else it will be overwritten!
 def main(argv):
     start = time.time()
     query_dir = argv[0]
-    qlist = os.listdir(query_dir)
-    qlist = [fn for fn in qlist if (".query" in fn)]
-    args = [[fn[4:13],2,query_dir + fn] for fn in qlist]
+    #Get all the content from the query_directory
+    content_list = os.listdir(query_dir)
+    #Separate out the .result and .query files
+    result_list = [fn for fn in content_list if (".result" in fn)]
+    query_list = np.array([fn for fn in content_list if (".query" in fn)])
+    #make a mask for qhich .query files don't have a .result file
+    not_run = np.array([(query.split(".")[0] + ".result" not in result_list) for query in query_list])
+    query_list = query_list[not_run]
+    #Format the arguments of epicID, campaign, and absolute path to each query file for the remaining queries
+    args = [[fn[4:13],2,query_dir + fn] for fn in query_list]
+    #Farm them to multiprocessing
     pool = mp.Pool(processes=mp.cpu_count())
     results = pool.map(run.main, args)
     pool.close()
