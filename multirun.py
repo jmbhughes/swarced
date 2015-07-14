@@ -14,7 +14,10 @@ epicID in each location or else it will be overwritten!
 
 def main(argv):
     start = time.time()
-    query_dir = argv[0]
+    query_dir,skipfile,campaign = argv[0], argv[1],argv[2]
+    campaign = int(campaign)
+    f = open(skipfile,"wb")
+    f.close()
     #Get all the content from the query_directory
     content_list = os.listdir(query_dir)
     #Separate out the .result and .query files
@@ -24,7 +27,7 @@ def main(argv):
     not_run = np.array([(query.split(".")[0] + ".result" not in result_list) for query in query_list])
     query_list = query_list[not_run]
     #Format the arguments of epicID, campaign, and absolute path to each query file for the remaining queries
-    args = [[fn[4:13],2,query_dir + fn] for fn in query_list]
+    args = [[fn[4:13], campaign, query_dir + fn, skipfile] for fn in query_list]
     #Farm them to multiprocessing
     pool = mp.Pool(processes=mp.cpu_count())
     results = pool.map(run.main, args)

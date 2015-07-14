@@ -126,6 +126,8 @@ def analyze(query,cache=False):
     result = pipe.query(**query)
     return result
 
+    
+
 def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/lighcurves",tail=""):
     fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
     newfn = fn.split(".")[0] + "_clip.fits"
@@ -218,7 +220,7 @@ def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/",tail=
     pl.show()
     return phase, flux
     
-def plot_lc(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="",injected=False):
+def plot_lc(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="",injected=False,ylimtype="med",xlim=[0,0]):
     '''Plots the best lightcurve from photometry'''
     epicID,campaign = str(epicID),str(campaign)
     if not injected:
@@ -233,7 +235,20 @@ def plot_lc(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="
     pl.plot(mark_list, np.median(flux) + np.zeros(len(mark_list)),'r*',markersize=20)
     if injected:
         pl.plot(transits, np.median(flux) + np.zeros(len(transits)),'r*',markersize=20)
-    pl.ylim(min([np.min(flux),np.median(flux)-0.5*np.std(flux)]), 
-            max([np.max(flux),np.median(flux)+0.5*np.std(flux)]))
+    if xlim != [0,0]:
+        pl.xlim(xlim)
+        flux = flux[((time>xlim[0])*(time<xlim[1]))]
+    else:
+        xlim = [min(time),max(time)]
+        flux = flux[((time>xlim[0])*(time<xlim[1]))]
+    if ylimtype=="med":
+           pl.ylim(np.median(flux)-0.5*np.std(flux),np.median(flux)+0.5*np.std(flux))
+    elif ylimtype=="minmax":
+           pl.ylim(np.min(flux),np.max(flux))
+    elif ylimtype=="pick":
+        pl.ylim(min([np.min(flux),np.median(flux)-0.5*np.std(flux)]), 
+                max([np.max(flux),np.median(flux)+0.5*np.std(flux)]))
+
     pl.show()
     del mark_list
+    #return fig

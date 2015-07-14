@@ -14,16 +14,23 @@ epicID in each location or else it will be overwritten!
 
 def main(argv):
     start = time.time()
-    epicID, campaign, query_path = argv
-    epicID, campaign = str(epicID), str(campaign)
-    query = pickle.load(open(query_path, 'r'))
-    result = swarced.analyze(query, cache=False)
-    out_path = "/".join(query_path.split("/")[:-1]) + "/" + query_path.split("/")[-1:][0].split(".")[0] + ".result"
-    pickle.dump(result.response, open(out_path, 'wb'))
-    print("-----------------------------------------------------------")
-    print("Single run time: " + str(time.time()-start) + " seconds")
-    print("-----------------------------------------------------------")
-    return time.time()-start
+    epicID, campaign, query_path, skipfile = argv
+    try:
+        start = time.time()
+        epicID, campaign = str(epicID), str(campaign)
+        query = pickle.load(open(query_path, 'r'))
+        result = swarced.analyze(query, cache=False)
+        out_path = "/".join(query_path.split("/")[:-1]) + "/" + query_path.split("/")[-1:][0].split(".")[0] + ".result"
+        pickle.dump(result.response, open(out_path, 'wb'))
+        print("-----------------------------------------------------------")
+        print("Single run time: " + str(time.time()-start) + " seconds")
+        print("-----------------------------------------------------------")
+        return time.time()-start
+    except:
+    #except StopIteration:
+        f = open(skipfile,"a")
+        f.write(str(epicID) + "\n")
+        f.close()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
