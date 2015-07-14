@@ -126,8 +126,6 @@ def analyze(query,cache=False):
     result = pipe.query(**query)
     return result
 
-    
-
 def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/lighcurves",tail=""):
     fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
     newfn = fn.split(".")[0] + "_clip.fits"
@@ -207,10 +205,12 @@ def plot_periodogram(epic, result,pickled=True):
                     xytext=(10, 5), textcoords="offset points")
     pl.show()
     
-def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/",tail=""):
+def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/",tail="",initial_time=0):
     '''Plots a period folded curve'''
     epicID,campaign = str(epicID),str(campaign)
     time, flux = retrieve(epicID,campaign,inpath,tail)
+    if initial_time != 0:
+        time,flux = time[time>initial_time], flux[time>initial_time]
     fig = pl.figure(figsize=(5 * 1.61803398875,5))
     pl.title("EPIC " + epicID)
     phase = remEB.find_phase(time, period, t0)
@@ -220,13 +220,15 @@ def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/",tail=
     pl.show()
     return phase, flux
     
-def plot_lc(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="",injected=False,ylimtype="med",xlim=[0,0]):
+def plot_lc(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="",injected=False,ylimtype="med",xlim=[0,0],initial_time = 0):
     '''Plots the best lightcurve from photometry'''
     epicID,campaign = str(epicID),str(campaign)
     if not injected:
         time, flux = retrieve(epicID,campaign,inpath,tail)
     else:
         time, flux, transits = retrieve(epicID,campaign,inpath,tail,injected=True)
+    if initial_time != 0:
+        time,flux = time[time>initial_time], flux[time>initial_time]
     fig = pl.figure(figsize=(5 * 1.61803398875,5))
     pl.title("EPIC " + epicID)
     pl.plot(time,flux,'k.',ms=10)
