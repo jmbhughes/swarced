@@ -1,3 +1,5 @@
+import ketu
+
 def analyze(query,cache=False):
     '''Pass a target through the ketu pipeline
     Key Terms:

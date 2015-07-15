@@ -4,7 +4,7 @@ def build_query(epicID, campaign, directory,basispath,catalogpath,time_spacing=0
         Key-words:
             epicID--the designation for your object
             campaign--which K2 campaign the object is in
-            directory--directory that contains the lightcurves folder
+            directory--this is the path to where the lightcurves folder is: on linux '/k2_data/'; on macs '/Volumes/k2_data/'
             basispath--the path to the basis catalog of eigenlightcurves "/k2_data/elcs/c2-norm.h5"
             catalogpath-the path to the catalog for EPIC "/k2_data/catalogs/epic.h5"
             time_spacing--the grid resolution in days

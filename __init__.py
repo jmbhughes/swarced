@@ -2,7 +2,7 @@ from __future__ import division, print_function
 import numpy as np
 import matplotlib.pyplot as pl
 from matplotlib.ticker import MaxNLocator
-import ketu, urllib2, sys, pickle, transit, h5py, shutil
+import sys, pickle, transit, h5py, shutil
 from astropy.io import fits
 import remove_EB as remEB
 import data
