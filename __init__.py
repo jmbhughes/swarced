@@ -5,6 +5,7 @@ from matplotlib.ticker import MaxNLocator
 import ketu, urllib2, sys, pickle, transit, h5py, shutil
 from astropy.io import fits
 import remove_EB as remEB
+import data
 
 def get_lc_path(epicID, campaign, directory, tail=""):
     '''This function navigates the gnarly subdirectory structure of the k2 lightcurve directories
@@ -15,7 +16,7 @@ def get_lc_path(epicID, campaign, directory, tail=""):
     '''
     if directory[-1] != "/":
         directory += "/"
-    epicIDstr, campaign str= str(epicID), str(campaign)
+    epicIDstr, campaignstr= str(epicID), str(campaign)
     path = directory + "lightcurves/c" + campaignstr + "/"  + epicIDstr[0:4] + "00000/" + epicIDstr[4:6] + "000/"
     path += "ktwo" + epicID + "-c0" + campaignstr + "_lpd-lc" + tail + ".fits"
     return path

@@ -1,14 +1,17 @@
-def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/", tail="", injected=False):
-    '''Provides access to the time and flux data from a light curve given the EPIC ID and campaign'''
+def retrieve(epicID, campaign, directory="/k2_data/", tail="", injected=False,fn=''):
+    '''Provides access to the time and flux data from a light curve given the EPIC ID and campaign
+    epicID--the K2 object identification number
+    campaign--which campaign this object belongs to
+    directory--this is the path to where the lightcurves folder is: on linux '/k2_data/'; on macs '/Volumes/k2_data/'
+    tail--if any identifiers have been added onto the tail
+    injected--if true it also retrieves when the transits were
+    fn--if it's anything other than fn it will not look in the normal directory path
+    '''
     campaign = str(campaign)
     epicID = str(epicID)
     #if it's in the default path
-    if inpath == "/k2_data/lightcurves/":
-        path = inpath + "c" + campaign + "/" +  epicID[0:4] + "00000/" + epicID[4:6] + "000/" 
-    else:#designate the full path
-        path = inpath
-    #construct the filename
-    fn = path + "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
+    if fn == '':
+        get_lc_path(epicID, campaign, directory)
     f = fits.open(fn)
     aperture = np.argmin(f[2].data['cdpp6'])
     time, flux = f[1].data['time'] + f[1].header['BJDREFI'], f[1].data['flux'][:,aperture]
@@ -21,30 +24,34 @@ def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/", tail="", injected
         return time[m], flux[m]
     else: #was injected
         return time[m], flux[m], transits
-    
-def edit(mask, epicID, campaign, inpath="/k2_data/lightcurves/", outpath="/k2_data/eb_removed/"):
-    '''Allows direct alteration of a lightcurve by applying a mask to a K2 lightcurve'''
-    epicID, campaign = str(epicID),str(campaign)
-    if inpath == "/k2_data/lightcurves/":
-        path = inpath + "c" + campaign + "/" +  epicID[0:4] + "00000/" + epicID[4:6] + "000/" 
-    else:
-        path = inpath
-    fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc.fits"
-    f = fits.open(path + fn)
-    #apply the mask to all the columns
-    f[1].data = f[1].data[mask]
-    f.writeto(outpath + fn, clobber=True)
-    f.close()
-    return
 
-def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/lighcurves",tail=""):
-    fn = "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
-    newfn = fn.split(".")[0] + "_clip.fits"
-    shutil.copy(inpath + fn, inpath + newfn)
-    f = fits.open(inpath + newfn, mode='update')
-    phase = remEB.find_phase(f[1].data['time']+f[1].header['BJDREFI'], period, center )
-    mask = remEB.clip_eclipses(phase, period, sep, pwid, swid)
-    mask = mask * ((f[1].data['time'] +f[1].header['BJDREFI'])> 2.45672e6 + 50)
+def clip(epicID, campaign, period, center, separation, pwidth, swidth, initial_time, outpath, directory="/k2_data/",fn=''):
+    '''Makes a new fits file for a lightcurve with EB eclipses removed
+    epicID--the K2 object identification number
+    campaign--which campaign this object belongs to
+    period--the period of the EB in days
+    center--the center of one of the primary eclipses in BJD
+    separation--the phase distance between primary and secondary eclipses
+    pwidth--how wide the primary eclipses are
+    swidth--how wide the secondary eclipses are
+    initial_time--if you want to remove data before some time you can clip that too
+    outpath--the directory the clipped lightcurve should be stored in
+    directory--this is the path to where the lightcurves folder is: on linux '/k2_data/'; on macs '/Volumes/k2_data/'
+    fn--if fn is designated it will ignore the normal lightcurves folder and look at that specific file
+    '''
+    if fn == '':
+        fn = get_lc_path(epicID, campaign, directory)
+    newfn = outpath + fn.split('/')[-1].split(".")[0] + "_clip.fits"
+    shutil.copy(fn, newfn)
+    clip_work(newfn, period, center, separation, pwdith, swidth, initial_time)
+    
+def clip_work(fn, period, center, separation, pwidth, swidth, initial_time):
+    '''the main work function for clip, see clip'''
+    f = fits.open(fn, mode='update')
+    time = f[1].data['time']+f[1].header['BJDREFI']
+    phase = find_phase(time, period, center )
+    mask = eclipse_mask(phase, period, sep, pwid, swid)
+    mask = mask * (time > initial_time)
     f[1].data['quality'][np.logical_not(mask)]= 16384
     m = (f[1].data['quality'] == 0 )
     f[1].data = f[1].data[m]
@@ -52,9 +59,23 @@ def clean(epicID, campaign, period, center, sep, pwid, swid, inpath="/k2_data/li
     f.close()
     
 def find_phase(time, period, center):
+    '''Returns an array of phases corresponding to the input time array
+    time--an array of BJD times
+    period--the period of the EB (or planet)
+    center--the BJD time of the primary eclipse (what you want at phase 0)
+    '''
     return (time  - center) % period / period
 
-def eclipse_mask(phase, period, sep, pwid, swid):
-    ph, sh = 0.5*(pwid + 0.01), 0.5*(swid+0.01)
-    mask = (phase > ph)  * (phase < 1-ph) * ((phase < sep - sh) | (phase > sep + sh))
+def eclipse_mask(phase, period, separation, pwidth, swidth,cushion=0.01):
+    '''Determines which phase times are in the eclipse
+    phase--an array of phases (can be gotten from find_phase)
+    period--the period of the EB in days
+    center--the center of one of the primary eclipses in BJD
+    separation--the phase distance between primary and secondary eclipses
+    pwidth--how wide the primary eclipses are
+    swidth--how wide the secondary eclipses are
+    cushion--since masking parameters are sometimes not sufficient you can add a small amount to make sure they fully mask the eclipse
+    '''
+    phalf, shalf = 0.5*(pwidth + cushion), 0.5*(swidth+cushion)
+    mask = (phase > phalf)  * (phase < 1-phalf) * ((phase < separation - shalf) | (phase > separation + shalf))
     return mask
