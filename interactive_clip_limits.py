@@ -16,7 +16,6 @@ print(type(blsepic))
 #check if all ls have blsreport entries
 ls = np.array([epic for epic in ls if epic in blsepic])
 
-
 #limitsreport = np.array([])
 #limitsepic = np.array([])
 with open(directory + "limitsreport.pkl","r") as f:
