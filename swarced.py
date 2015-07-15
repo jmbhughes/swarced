@@ -1,13 +1,12 @@
 from __future__ import division, print_function
-from matplotlib import rcParams
-rcParams["savefig.dpi"] = 100
-rcParams["font.size"] = 10
 import numpy as np
 import matplotlib.pyplot as pl
 from matplotlib.ticker import MaxNLocator
 import ketu, urllib2, sys, pickle, transit, h5py, shutil
 from astropy.io import fits
 import remove_EB as remEB
+
+class query:
 
 def build_query(epicID, campaign, time_spacing=0.02, durations=[0.05,0.1,0.2]\
  ,min_period = 0.5,max_period=70.0,npeaks=3,path="DEFAULT",fn="DEFAULT", initial_time = 1975.):
