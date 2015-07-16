@@ -18,5 +18,5 @@ def get_lc_path(epicID, campaign, directory, tail=""):
         directory += "/"
     epicIDstr, campaignstr= str(epicID), str(campaign)
     path = directory + "lightcurves/c" + campaignstr + "/"  + epicIDstr[0:4] + "00000/" + epicIDstr[4:6] + "000/"
-    path += "ktwo" + epicID + "-c0" + campaignstr + "_lpd-lc" + tail + ".fits"
+    path += "ktwo" + epicIDstr + "-c0" + campaignstr + "_lpd-lc" + tail + ".fits"
     return path

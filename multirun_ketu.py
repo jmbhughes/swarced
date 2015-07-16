@@ -23,7 +23,7 @@ def main(argv):
     #Separate out the .result and .query files
     result_list = [fn for fn in content_list if (".result" in fn)]
     query_list = np.array([fn for fn in content_list if (".query" in fn)])
-    #make a mask for qhich .query files don't have a .result file
+    #make a mask for which .query files don't have a .result file
     not_run = np.array([(query.split(".")[0] + ".result" not in result_list) for query in query_list])
     query_list = query_list[not_run]
     #Format the arguments of epicID, campaign, and absolute path to each query file for the remaining queries
