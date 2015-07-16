@@ -146,11 +146,16 @@ def retrieve(epicID, campaign, inpath="/k2_data/lightcurves/", tail="", injected
     epicID = str(epicID)
     #if it's in the default path
     if inpath == "/k2_data/lightcurves/":
-        path = inpath + "c" + campaign + "/" +  epicID[0:4] + "00000/" + epicID[4:6] + "000/" 
+        path = inpath + "c" + campaign + "/" +  epicID[0:4] + "00000/" + epicID[4:6] + "000/"
+        fn = path + "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
+    elif inpath =="/Users/mhughes/k2/lightcurves/":
+        path = inpath + "c" + campaign + "/" +  epicID[0:4] + "00000/" + epicID[4:6] + "000/"
+        fn = path + "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
     else:#designate the full path
         path = inpath
+        fn = inpath
     #construct the filename
-    fn = path + "ktwo" + epicID + "-c0" + campaign + "_lpd-lc" + tail + ".fits"
+    
     f = fits.open(fn)
     aperture = np.argmin(f[2].data['cdpp6'])
     time, flux = f[1].data['time'] + f[1].header['BJDREFI'], f[1].data['flux'][:,aperture]
