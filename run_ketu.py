@@ -26,8 +26,8 @@ def main(argv):
         print("Single run time: " + str(time.time()-start) + " seconds")
         print("-----------------------------------------------------------")
         return time.time()-start
-    except:
-    #except StopIteration:
+    #except:
+    except StopIteration:
         f = open(skipfile,"a")
         f.write(str(epicID) + "\n")
         f.close()

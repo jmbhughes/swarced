@@ -1,9 +1,9 @@
-import sys, getopt, os, swarced, pickle, run, time
+import sys, getopt, os, swarced, pickle, run_ketu, time
 import numpy as np
 import multiprocessing as mp
 
 '''You can execute many ketu runs from the commandline using this program.
-Runs should be formatted like:
+Runs should be formatted lsike:
 python multirun.py path_to_query_directory
 The query directory should contain all the query pickled dictionaries you wish
 to run. There can only be one per EPIC_ID. The output files will be paced in the
@@ -16,8 +16,14 @@ def main(argv):
     start = time.time()
     query_dir,skipfile,campaign = argv[0], argv[1],argv[2]
     campaign = int(campaign)
-    f = open(skipfile,"wb")
-    f.close()
+    try:
+        f = open(skipfile,"a")
+        f.close()
+    except:
+        print("test")
+        f = open(skipfile,'wb')
+        f.close()
+    pickle.dump([], open(query_dir + "timing.pkl", "wb"))
     #Get all the content from the query_directory
     content_list = os.listdir(query_dir)
     #Separate out the .result and .query files
@@ -30,7 +36,7 @@ def main(argv):
     args = [[fn[4:13], campaign, query_dir + fn, skipfile] for fn in query_list]
     #Farm them to multiprocessing
     pool = mp.Pool(processes=mp.cpu_count())
-    results = pool.map(run.main, args)
+    results = pool.map(run_ketu.main, args)
     pool.close()
     pool.join()
     pickle.dump([time.time() - start, results], open(query_dir + "timing.pkl", "wb"))
