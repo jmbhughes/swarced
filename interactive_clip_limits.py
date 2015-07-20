@@ -24,7 +24,6 @@ try:
         if len(limitsreport) ==0:
             limitsepic = []
         else:
-            #print("not empty")
             limitsepic = [int(l[0]) for l in limitsreport]
 except:
     limitsreport=[]
@@ -86,9 +85,11 @@ class Select:
         def decrease(self, event):
             global axs, multiple, limits, phase
             limits=[]
-            multiple -= 0.5
-            phase = sw.data.find_phase(time,multiple*blsperiod[loc], 0)
-            sketch(mode)
+            if multiple - 0.5 > 0:
+                multiple -= 0.5
+                print(multiple)
+                phase = sw.data.find_phase(time,multiple*blsperiod[loc], 0)
+                sketch(mode)
             #axs[1].cla()
             #axs[1].plot(phase,flux,'k.',picker=5)
             #axs[0].set_title("EPIC {0:9.0f}: period of {1:6.3f} days".format( epicID, multiple * blsperiod[loc]))
@@ -106,8 +107,9 @@ def limits_to_params(epicid, campaign, period, mode, limits):
     t0 = pwidth/2 + pleft #phase of center of primary
     return epicid, pwidth, swidth, period, sep, t0, mode
 
-for epicID in ls:
+for i,epicID in enumerate(ls):
     if running:
+        print(str(i) + " of " + str(len(ls)))
         limits, mode, multiple = [], "undecided", 1
         fig, axs = pl.subplots(2,1)
         time, flux = sw.data.retrieve(str(epicID),CAMPAIGN,fn=sw.data.get_lc_path(epicID,CAMPAIGN,directory))
@@ -117,7 +119,7 @@ for epicID in ls:
         
         axs[0].set_title("EPIC {0:9.0f}: period of {1:6.3f} days".format( epicID, blsperiod[loc]))
         axs[0].set_label("Time")
-        axs[1].set_xticks([])
+        #axs[1].set_xticks([])
         axs[1].set_ylabel("FM15 Flux")
         axs[0].plot(time, flux, 'k.',picker=5)
         axs[1].plot(phase,flux,'k.',picker=5)
@@ -144,6 +146,10 @@ for epicID in ls:
             axs[1].cla()
             axs[1].plot(phase,flux,'k.',picker=5)
             axs[0].set_title("EPIC {0:9.0f}: period of {1:6.3f} days".format( epicID, multiple * blsperiod[loc]))
+            axs[0].set_xlabel("Time")
+            axs[1].set_xlabel("Phase")
+            axs[1].set_ylabel("FM15 Flux")
+            axs[0].set_ylabel("FM15 Flux")
             if len(limits) >=2:
 
                 if limits[0] < limits[1]:
@@ -231,7 +237,7 @@ for epicID in ls:
             sketch(mode)
             #print  mode
         radio3.on_clicked(modefunc)
-        mode = radio3.value_selected
+        mode = "Good"
 
         pl.show()
         
