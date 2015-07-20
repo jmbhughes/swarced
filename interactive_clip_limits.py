@@ -2,10 +2,12 @@ import numpy as np
 import matplotlib.pyplot as pl
 import sys, os, pickle, copy
 #sys.path.append("/Users/nbanale1-temp/Desktop/swarced")
-sys.path.append("/k2_data/")
+sys.path.append("../")
 import swarced as sw
-from matplotlib.widgets import Button
-print dir(sw)
+from matplotlib.widgets import Button, RadioButtons
+
+if sys.argv[1] == 'help':
+    print("script, blsreportpath, limitsreportpath, directory = sys.argv")
 script, blsreportpath, limitsreportpath, directory = sys.argv
 #GLOBAL VARIABLES:
 CAMPAIGN, INITIAL_TIME = "2", 2.45689e6+10
@@ -17,15 +19,19 @@ blsperiod = np.array([f[1][0] for f in blsreport])
 running=True
 try:
     with open(limitsreportpath,"r") as f:
+        #print("loaded " + limitsreportpath)
         limitsreport = pickle.load(f)
         if len(limitsreport) ==0:
             limitsepic = []
         else:
+            #print("not empty")
             limitsepic = [int(l[0]) for l in limitsreport]
 except:
     limitsreport=[]
     limitsepic = []
 
+#print blsepic
+#print limitsepic
 ls = blsepic
 ls = np.array([epic for epic in ls if epic not in limitsepic])
 class Select:
@@ -52,7 +58,9 @@ class Select:
             sketch(mode)
         def submit(self,event):
             global limitsreport, limits, epicID, period, mode, multiple, loc
-            limitsreport.append(limits_to_params(epicID, CAMPAIGN, multiple*blsperiod[loc], mode, limits))
+            x = limits_to_params(epicID, CAMPAIGN, multiple*blsperiod[loc], mode, limits)
+            print x
+            limitsreport.append(x)
             pickle.dump(limitsreport, open(limitsreportpath,'wb'))
             pl.close()
         def undo(self,event):
@@ -71,17 +79,19 @@ class Select:
             limits = []
             multiple += 0.5
             phase = sw.data.find_phase(time,multiple*blsperiod[loc], 0)
-            axs[1].cla()
-            axs[1].plot(phase,flux,'k.',picker=5)
-            axs[0].set_title("EPIC {0:9.0f}: period of {1:6.3f} days".format( epicID, multiple * blsperiod[loc]))
+            sketch(mode)
+            #axs[1].cla()
+            #axs[1].plot(phase,flux,'k.',picker=5)
+            #axs[0].set_title("EPIC {0:9.0f}: period of {1:6.3f} days".format( epicID, multiple * blsperiod[loc]))
         def decrease(self, event):
             global axs, multiple, limits, phase
             limits=[]
             multiple -= 0.5
             phase = sw.data.find_phase(time,multiple*blsperiod[loc], 0)
-            axs[1].cla()
-            axs[1].plot(phase,flux,'k.',picker=5)
-            axs[0].set_title("EPIC {0:9.0f}: period of {1:6.3f} days".format( epicID, multiple * blsperiod[loc]))
+            sketch(mode)
+            #axs[1].cla()
+            #axs[1].plot(phase,flux,'k.',picker=5)
+            #axs[0].set_title("EPIC {0:9.0f}: period of {1:6.3f} days".format( epicID, multiple * blsperiod[loc]))
             
 def limits_to_params(epicid, campaign, period, mode, limits):
     while len(limits)!= 4:
@@ -94,7 +104,7 @@ def limits_to_params(epicid, campaign, period, mode, limits):
     else:
         sep = 0
     t0 = pwidth/2 + pleft #phase of center of primary
-    return pwidth, swidth, period, sep, t0, mode
+    return epicid, pwidth, swidth, period, sep, t0, mode
 
 for epicID in ls:
     if running:
@@ -129,10 +139,13 @@ for epicID in ls:
             while len(ll) != 4:
                 ll += [-1]
             return ll
+        
         def sketch(mode):
             axs[1].cla()
             axs[1].plot(phase,flux,'k.',picker=5)
+            axs[0].set_title("EPIC {0:9.0f}: period of {1:6.3f} days".format( epicID, multiple * blsperiod[loc]))
             if len(limits) >=2:
+
                 if limits[0] < limits[1]:
                     mask = (phase > limits[0]) * (phase < limits[1])
                 else:
@@ -145,6 +158,7 @@ for epicID in ls:
                     mask = ((phase > limits[2]) * (phase < 1)) | ((phase < limits[3]) * (phase > 0))
                 axs[1].plot(phase[mask], flux[mask], 'g.')
             pl.draw()
+            #print mode
 
         def onpick(event):
             global limits
@@ -161,35 +175,64 @@ for epicID in ls:
         callback = Select()
         
         axincrease = pl.axes([0.7-6*0.11,0.05,0.1,0.075])
-        bincrease = Button(axincrease,'Increase')
+        bincrease = Button(axincrease,'Increase',color='white')
         bincrease.on_clicked(callback.increase)
 
         axdecrease = pl.axes([0.7-5*0.11,0.05,0.1,0.075])
-        bdecrease = Button(axdecrease,'Decrease')
+        bdecrease = Button(axdecrease,'Decrease',color='white')
         bdecrease.on_clicked(callback.decrease)
         
-        axunusable = pl.axes([0.7-4*0.11,0.05,0.1,0.075])
-        bunusable = Button(axunusable, 'Unusable \n Clipping')
-        bunusable.on_clicked(callback.isUnusable)
+        #axunusable = pl.axes([0.7-4*0.11,0.05,0.1,0.075])
+        #bunusable = Button(axunusable, 'Unusable \n Clipping')
+        #bunusable.on_clicked(callback.isUnusable)
 
-        axnoteb = pl.axes([0.7-3*0.11,0.05,0.1,0.075])
-        bnoteb = Button(axnoteb, 'Not an EB')
-        bnoteb.on_clicked(callback.isNotEB)
+        #axnoteb = pl.axes([0.7-3*0.11,0.05,0.1,0.075])
+        #bnoteb = Button(axnoteb, 'Not an EB')
+        #bnoteb.on_clicked(callback.isNotEB)
         
-        axwrongp = pl.axes([0.7-2*0.11,0.05,0.1,0.075])
-        bwrongp = Button(axwrongp, 'Wrong \n Period')
-        bwrongp.on_clicked(callback.isWrongPeriod)
+        #axwrongp = pl.axes([0.7-2*0.11,0.05,0.1,0.075])
+        #bwrongp = Button(axwrongp, 'Wrong \n Period')
+        #bwrongp.on_clicked(callback.isWrongPeriod)
 
         axsubmit = pl.axes([0.7-1*0.11,0.05,0.1,0.075])
-        bsubmit = Button(axsubmit, 'Submit')
+        bsubmit = Button(axsubmit, 'Submit',color='white')
         bsubmit.on_clicked(callback.submit)
 
-        axundo = pl.axes([0.7-0*0.11,0.05,0.1,0.075])
-        bundo = Button(axundo, 'Undo')
+        axundo = pl.axes([0.7-0*0.11,0.05,0.1,0.075],axisbg='white')
+        bundo = Button(axundo, 'Undo',color='white')
         bundo.on_clicked(callback.undo)
 
         axexit = pl.axes([0.7-(-1)*0.11,0.05,0.1,0.075])
-        bexit = Button(axexit, 'Exit')
+        bexit = Button(axexit, 'Exit',color='white')
         bexit.on_clicked(callback.exit)
 
+        axcolor = 'lightgoldenrodyellow'
+        rax = pl.axes([0.7-4*0.11,0,0.2,0.2])
+        #x0, y0 = rax.transAxes.transform((0, 0)) # lower left in pixels
+        #x1, y1 = rax.transAxes.transform((1, 1)) # upper right in pixes
+        #dx = x1 - x0
+        #dy = y1 - y0
+        #maxd = max(dx, dy)
+        #width = .15 * maxd / dx
+        #height = .15 * maxd / dy
+        #rax.axis(aspect = 'equal')
+        #rax.set_aspect(1)
+        #rax.add_artist(Circle((.5, .5), .15))
+        
+        def resize_buttons(r, f):
+            "Resize all radio buttons in `r` collection by fractions `f`"
+            [c.set_radius(0.15) for c in r.circles]
+            
+        radio3 = RadioButtons(rax, ("Good", 'Unusable Clipping', 'Not an EB', 'Wrong Period', 'Odd'))
+        #resize_buttons(radio3,5)
+        def modefunc(label):
+            global mode
+            mode = label
+            sketch(mode)
+            #print  mode
+        radio3.on_clicked(modefunc)
+        mode = radio3.value_selected
+
         pl.show()
+        
+

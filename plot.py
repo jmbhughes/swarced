@@ -26,10 +26,13 @@ def plot_periodogram(epicID,result,pickled=True):
         ax.annotate("{0:.2f}".format(x0), xy=(x0, y0), ha="center",fontsize=10,
                     xytext=(10, 5), textcoords="offset points")
     pl.show()
+
+def phase(epicID,campaign,period, t0, inpath="/k2_data/lightcurves/",tail="",initial_time=0,fn=''):
+    plot_phase(epicID,campaign,period, t0, inpath=inpath,tail=tail,initial_time=initial_time,fn=fn)
     
-def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/",tail="",initial_time=0,fn=''):
+def plot_phase(epicID,campaign,period, t0, inpath ="/k2_data/lightcurves/",tail="",initial_time=0,fn='',raw=False):
     '''Plots a period folded curve'''
-    time, flux = data.retrieve(epicID,campaign,inpath,tail,fn=fn)
+    time, flux = data.retrieve(epicID,campaign,inpath,tail,fn=fn,raw=raw)
     if initial_time != 0:
         time,flux = time[time>initial_time], flux[time>initial_time]
     plot_phase_work(time, period, t0, flux, "EPIC " + str(epicID))
@@ -43,13 +46,16 @@ def plot_phase_work(time, period, center, flux, title):
     pl.ylabel("FM15 Flux")
     pl.show()
     
-def plot_lc(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="",injected=False,ylimtype="med",xlim=[0,0],initial_time = 0,fn=''):
+def lightcurve(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="",injected=False,ylimtype="med",xlim=[0,0],initial_time = 0,fn='',raw=False):
+    plot_lc(epicID, campaign, inpath=inpath,mark_list=mark_list,tail=tail,injected=injected,ylimtype=ylimtype,xlim=xlim,initial_time = initial_time,fn=fn,raw=raw)
+
+def plot_lc(epicID, campaign, inpath="/k2_data/lightcurves/",mark_list=[],tail="",injected=False,ylimtype="med",xlim=[0,0],initial_time = 0,fn='',raw=False):
     '''Plots the best lightcurve from photometry'''
     epicID,campaign = str(epicID),str(campaign)
     if not injected:
-        time, flux = data.retrieve(epicID,campaign,inpath,tail,fn=fn)
+        time, flux = data.retrieve(epicID,campaign,inpath,tail,fn=fn,raw=raw)
     else:
-        time, flux, transits = data.retrieve(epicID,campaign,inpath,tail,injected=True,fn=fn)
+        time, flux, transits = data.retrieve(epicID,campaign,inpath,tail,injected=True,fn=fn,raw=raw)
     if initial_time != 0:
         time,flux = time[time>initial_time], flux[time>initial_time]
     fig = pl.figure(figsize=(5 * 1.61803398875,5))

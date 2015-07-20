@@ -2,7 +2,7 @@ from astropy.io import fits
 import numpy as np
 import shutil
 
-def retrieve(epicID, campaign, directory="/k2_data/", tail="", injected=False,fn=''):
+def retrieve(epicID, campaign, directory="/k2_data/", tail="", injected=False,fn='',raw=False):
     '''Provides access to the time and flux data from a light curve given the EPIC ID and campaign
     epicID--the K2 object identification number
     campaign--which campaign this object belongs to
@@ -24,6 +24,8 @@ def retrieve(epicID, campaign, directory="/k2_data/", tail="", injected=False,fn
     if injected:
         transits = list(f[3].data['center'] + f[1].header['BJDREFI'])
     f.close()
+    if raw==True:
+        return np.array(time), np.array(flux)
     if not injected:
         return np.array(time[m]), np.array(flux[m])
     else: #was injected
