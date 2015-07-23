@@ -76,6 +76,11 @@ def clip_work(fn, period, center, separation, pwidth, swidth, initial_time):
     f[1].data['quality'][np.logical_not(mask)]= 16384
     m = (f[1].data['quality'] == 0 )
     f[1].data = f[1].data[m]
+    f[1].header['EBPERIOD'] = period
+    f[1].header['EBT0'] = center
+    f[1].header['EBSEP'] = separation
+    f[1].header['EBPWIDTH'] = pwidth
+    f[1].header['EBSWIDTH'] = swidth
     f.flush()
     f.close()
     

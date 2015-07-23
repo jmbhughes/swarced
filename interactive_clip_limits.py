@@ -13,8 +13,10 @@ script, blsreportpath, limitsreportpath, directory = sys.argv
 CAMPAIGN, INITIAL_TIME = "2", 2.45689e6+10
 
 blsreport = pickle.load(open(blsreportpath,'r'))
-blsepic = np.array([int(f[0]) for f in blsreport])
-blsperiod = np.array([f[1][0] for f in blsreport])
+blsepic = np.array(blsreport[:,0],dtype=np.int)
+blsperiod = blsreport[:,1]
+#blsepic = np.array([int(f[0]) for f in blsreport])
+#blsperiod = np.array([f[1][0] for f in blsreport])
 
 running=True
 try:
@@ -101,10 +103,10 @@ def limits_to_params(epicid, campaign, period, mode, limits):
     pwidth = (pright - pleft)%1
     swidth = (sright - sleft)%1
     if sleft != -1:
-        sep = (sleft - pright)%1 #the mod accounts the possibility that the secondary is before the primary
+        sep = (sleft - pright)%1 + pwidth #the mod accounts the possibility that the secondary is before the primary
     else:
         sep = 0
-    t0 = pwidth/2 + pleft #phase of center of primary
+    t0 = time[np.argmin(abs(phase - (pwidth/2 + pleft)))] #phase of center of primary
     return epicid, pwidth, swidth, period, sep, t0, mode
 
 for i,epicID in enumerate(ls):
@@ -229,7 +231,7 @@ for i,epicID in enumerate(ls):
             "Resize all radio buttons in `r` collection by fractions `f`"
             [c.set_radius(0.15) for c in r.circles]
             
-        radio3 = RadioButtons(rax, ("Good", 'Unusable Clipping', 'Not an EB', 'Wrong Period', 'Odd'))
+        radio3 = RadioButtons(rax, ("EB", 'EB but check', 'Not an EB', 'Sinusoidal','Periodic','Odd'))
         #resize_buttons(radio3,5)
         def modefunc(label):
             global mode
@@ -237,7 +239,7 @@ for i,epicID in enumerate(ls):
             sketch(mode)
             #print  mode
         radio3.on_clicked(modefunc)
-        mode = "Good"
+        mode = "EB"
 
         pl.show()
         

@@ -1,9 +1,8 @@
-import os, pickle, bls, time, sys, data
+import os, pickle, bls, time, sys, data, scoop, socket
 from astropy.io import ascii
 import numpy as np
 import multiprocessing as mp
 
-script, all_lc_path, directory, campaign, initial_time, save_path = sys.argv
 
 def blswrap(epicid, campaign, initial_time):
     try:
@@ -30,16 +29,17 @@ def single_test(epicid):
 if os.path.isfile(save_path):
     raise IOError("File already exists! Please give a different save_path")
 
-pickle.dump([],open(save_path,"wb"))
-all_lc_list = ascii.read(all_lc_path)
-all_lc_epic = [int(lc.split("/")[-1][4:13]) for lc in all_lc_list['filenames'] if ".fits" in lc]
+if __name__ == "__main__":
+    script, all_lc_path, directory, campaign, initial_time, save_path = sys.argv
 
-start = time.time()
-pool = mp.Pool(processes=mp.cpu_count())
-results = pool.map(single_test, all_lc_epic)
-pool.close()
-pool.join()
-end = time.time()
-print("Beginning save")
-pickle.dump(results,open(save_path,"wb"))
-print("Finished in " + str(int(end-start)) + " seconds")
+    pickle.dump([],open(save_path,"wb"))
+    all_lc_list = ascii.read(all_lc_path)
+    all_lc_epic = [int(lc.split("/")[-1][4:13]) for lc in all_lc_list['filenames'] if ".fits" in lc]
+
+    start = time.time()
+    results = list(scoop.futures.map_as_completed(single_test,all_lc_epic))
+    pool.join()
+    end = time.time()
+    print("Beginning save")
+    pickle.dump(results,open(save_path,"wb"))
+    print("Finished in " + str(int(end-start)) + " seconds")
