@@ -10,7 +10,7 @@ if sys.argv[1] == 'help':
     print("script, blsreportpath, limitsreportpath, directory = sys.argv")
 script, blsreportpath, limitsreportpath, directory = sys.argv
 #GLOBAL VARIABLES:
-CAMPAIGN, INITIAL_TIME = "2", 2.45689e6+10
+CAMPAIGN, INITIAL_TIME = "1", sw.C1INITIALTIME
 
 blsreport = pickle.load(open(blsreportpath,'r'))
 blsepic = np.array(blsreport[:,0],dtype=np.int)

@@ -22,6 +22,7 @@ def main(argv):
         result = ketu_wrap.analyze(query, cache=False)
         out_path = "/".join(query_path.split("/")[:-1]) + "/" + query_path.split("/")[-1:][0].split(".")[0] + ".result"
         pickle.dump(result.response, open(out_path, 'wb'))
+
         print("-----------------------------------------------------------")
         print("Single run time: " + str(time.time()-start) + " seconds")
         print("-----------------------------------------------------------")
