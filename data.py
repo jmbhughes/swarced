@@ -1,6 +1,6 @@
 from astropy.io import fits
 import numpy as np
-import shutil
+import shutil, os
 
 def retrieve(epicID, campaign, directory="/k2_data/", tail="", injected=False,fn='',raw=False):
     '''Provides access to the time and flux data from a light curve given the EPIC ID and campaign
@@ -26,7 +26,6 @@ def retrieve(epicID, campaign, directory="/k2_data/", tail="", injected=False,fn
             transits = list(f[3].data['center'] + f[1].header['BJDREFI'])
         f.close()
         if raw==True:
-            print np.array(time), np.array(flux)
             return np.array(time), np.array(flux)
         if not injected:
             if raw==True:
@@ -108,12 +107,42 @@ def clip_work(fn, period, center, separation, pwidth, swidth, initial_time):
     f.flush()
     f.close()
     
-def clip_by_median(epicID, campaign, period, center, outpath, initial_time, directory="/k2_data/", fn="")
+def clip_by_median(epicID, campaign, period, center, outpath, initial_time, windowsize, directory="/k2_data/", fn=""):
+    def rolling_window(a, window):
+        shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
+        strides = a.strides + (a.strides[-1],)
+        return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
     if fn == '':
-            fn = get_lc_path(epicID, campaign, directory)
-        newfn = outpath + fn.split('/')[-1].split(".")[0] + "_clip.fits"
-        shutil.copy(fn, newfn)
-        
+        fn = get_lc_path(epicID, campaign, directory)
+    newfn = outpath + fn.split('/')[-1].split(".")[0] + "_clip.fits"
+    shutil.copy(fn, newfn)
+    f = fits.open(newfn, mode='update')
+    aperture = np.argmin(f[2].data['cdpp6'])
+    time, flux = f[1].data['time'] + f[1].header['BJDREFI'], f[1].data['flux'][:,aperture]
+    #time, flux = time[time>initial_time], flux[time>initial_time]
+    phase = find_phase(time, period, center)
+    phaseo, fluxo = zip(*sorted(zip(phase,flux), key= lambda pair: pair[0]))
+    phasemodel, fluxmodel = np.median(rolling_window(np.array([phaseo,fluxo]),windowsize), -1)
+    newflux = []
+    for currphase, currflux in zip(phase, flux):
+        righti = np.searchsorted(phasemodel,[currphase,],'left')[0]
+        if righti-1 < 0:
+            lefti = len(phasemodel)-1
+            m,b = np.polyfit([phasemodel[lefti],phasemodel[righti]],[fluxmodel[lefti],fluxmodel[righti]],1)
+        else:
+            lefti = righti-1
+            m,b = np.polyfit(phasemodel[lefti:righti+1],fluxmodel[lefti:righti+1],1)
+        closest_flux = currphase * m + b
+        newflux.append(currflux/closest_flux)
+    newflux = np.array(newflux)
+    f[1].data['flux'][:,aperture] = newflux
+    mask = (time > initial_time)
+    f[1].data['quality'][np.logical_not(mask)]= 16384
+    m = (f[1].data['quality'] == 0 )
+    f[1].data = f[1].data[m]
+    f.close()
+    
+    
 def find_phase(time, period, center):
     '''Returns an array of phases corresponding to the input time array
     time--an array of BJD times

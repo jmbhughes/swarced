@@ -1,5 +1,6 @@
 import pickle
 from data import get_lc_path
+import numpy as np
 def build_query(epicID, campaign, directory,basispath,catalogpath,time_spacing=0.02, durations=[0.05,0.1,0.2]\
  ,min_period = 0.5,max_period=70.0,initial_time = 1975.,tail=''):
     '''Allows the construction of a customized query

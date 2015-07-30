@@ -11,6 +11,7 @@ from astropy.coordinates import Angle
 C0INITIALTIME = 2456773
 C1INITIALTIME = 2456810 
 C2INITIALTIME = 2456900
+C3INITIALTIME = 2456978
 
 
 def get_coords(EPIC):
