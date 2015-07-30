@@ -8,11 +8,15 @@ from matplotlib.widgets import Button, RadioButtons
 
 if sys.argv[1] == 'help':
     print("script, blsreportpath, limitsreportpath, directory = sys.argv")
-script, blsreportpath, limitsreportpath, directory = sys.argv
+script, blsreportpath, limitsreportpath, directory, campaign, initialtime = sys.argv
 #GLOBAL VARIABLES:
-CAMPAIGN, INITIAL_TIME = "1", sw.C1INITIALTIME
+CAMPAIGN, INITIAL_TIME = str(campaign), int(initialtime)
 
 blsreport = pickle.load(open(blsreportpath,'r'))
+print(blsreport)
+blsreport = [[b[0],b[1][0],b[1][1],b[1][2],b[1][3],b[1][4],b[1][5]] for b in blsreport]
+blsreport = np.array(blsreport)
+print blsreport
 blsepic = np.array(blsreport[:,0],dtype=np.int)
 blsperiod = blsreport[:,1]
 #blsepic = np.array([int(f[0]) for f in blsreport])

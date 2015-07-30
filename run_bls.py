@@ -3,9 +3,10 @@ from astropy.io import ascii
 import numpy as np
 import multiprocessing as mp
 
-script, all_lc_path, directory, campaign, initial_time, save_path = sys.argv
+script, all_lc_path, directory, campaign, initial_time, save_path, nbin = sys.argv
 
 def blswrap(epicid, campaign, initial_time):
+    global nbin
     try:
         start = time.time()
         initial_time = float(initial_time)
@@ -15,9 +16,9 @@ def blswrap(epicid, campaign, initial_time):
         u, v = np.zeros(len(t)), np.zeros(len(f))
         #minfreq, dfreq, nfreq = 1/70., 4.082799167108228e-06, 1000000
         minfreq, dfreq, nfreq = 0.015, 2.0437359493152146e-05,100000
-        nbin = 100
+        #nbin = 100
         minduration, maxduration = 0.01, 0.05
-        results = bls.eebls(t, f, u, v, nfreq, minfreq, dfreq, 10, minduration, maxduration)
+        results = bls.eebls(t, f, u, v, nfreq, minfreq, dfreq, nbin, minduration, maxduration)
         end = time.time()
         print(epicid, end - start)
         return epicid, results[1:]

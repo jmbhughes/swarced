@@ -25,11 +25,18 @@ def retrieve(epicID, campaign, directory="/k2_data/", tail="", injected=False,fn
         transits = list(f[3].data['center'] + f[1].header['BJDREFI'])
     f.close()
     if raw==True:
+        print np.array(time), np.array(flux)
         return np.array(time), np.array(flux)
     if not injected:
-        return np.array(time[m]), np.array(flux[m])
+        if raw==True:
+            return np.array(time), np.array(flux)
+        else:
+            return np.array(time[m]), np.array(flux[m])
     else: #was injected
-        return time[m], flux[m], transits
+        if raw == True:
+            return np.array(time), np.array(flux), transits
+        else:
+            return time[m], flux[m], transits
 
 def get_lc_path(epicID, campaign, directory, tail=""):
     '''This function navigates the gnarly subdirectory structure of the k2 lightcurve directories
@@ -84,6 +91,12 @@ def clip_work(fn, period, center, separation, pwidth, swidth, initial_time):
     f.flush()
     f.close()
     
+def clip_by_median(epicID, campaign, period, center, outpath, initial_time, directory="/k2_data/", fn="")
+    if fn == '':
+            fn = get_lc_path(epicID, campaign, directory)
+        newfn = outpath + fn.split('/')[-1].split(".")[0] + "_clip.fits"
+        shutil.copy(fn, newfn)
+        
 def find_phase(time, period, center):
     '''Returns an array of phases corresponding to the input time array
     time--an array of BJD times
