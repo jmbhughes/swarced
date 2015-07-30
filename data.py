@@ -17,27 +17,35 @@ def retrieve(epicID, campaign, directory="/k2_data/", tail="", injected=False,fn
     if fn == '':
         fn = get_lc_path(epicID, campaign, directory)
     f = fits.open(fn)
-    aperture = np.argmin(f[2].data['cdpp6'])
-    time, flux = f[1].data['time'] + f[1].header['BJDREFI'], f[1].data['flux'][:,aperture]
-    quality = f[1].data['quality']
-    m = np.isfinite(time) * np.isfinite(flux) * (quality==0)
-    if injected:
-        transits = list(f[3].data['center'] + f[1].header['BJDREFI'])
-    f.close()
-    if raw==True:
-        print np.array(time), np.array(flux)
-        return np.array(time), np.array(flux)
-    if not injected:
+    if campaign != "3" and campaign != 3: #assert campaign == 0, 1, or 2
+        aperture = np.argmin(f[2].data['cdpp6'])
+        time, flux = f[1].data['time'] + f[1].header['BJDREFI'], f[1].data['flux'][:,aperture]
+        quality = f[1].data['quality']
+        m = np.isfinite(time) * np.isfinite(flux) * (quality==0)
+        if injected:
+            transits = list(f[3].data['center'] + f[1].header['BJDREFI'])
+        f.close()
         if raw==True:
+            print np.array(time), np.array(flux)
             return np.array(time), np.array(flux)
-        else:
-            return np.array(time[m]), np.array(flux[m])
-    else: #was injected
-        if raw == True:
-            return np.array(time), np.array(flux), transits
-        else:
-            return time[m], flux[m], transits
-
+        if not injected:
+            if raw==True:
+                return np.array(time), np.array(flux)
+            else:
+                return np.array(time[m]), np.array(flux[m])
+        else: #was injected
+            if raw == True:
+                return np.array(time), np.array(flux), transits
+            else:
+                return time[m], flux[m], transits
+    else: #CAMPAIGN 3!
+        time, flux = f[1].data['TIME'] + f[1].header['BJDREFI'], f[1].data['PDCSAP_FLUX']
+        quality = f[1].data['SAP_QUALITY']
+        m = np.isfinite(time) * np.isfinite(flux) * (quality==0)
+        time, flux = time[m], flux[m]
+        f.close()
+        return time, flux
+    
 def get_lc_path(epicID, campaign, directory, tail=""):
     '''This function navigates the gnarly subdirectory structure of the k2 lightcurve directories
     epicID--integer indicating the K2 object ID associated with the file
@@ -50,6 +58,15 @@ def get_lc_path(epicID, campaign, directory, tail=""):
     epicIDstr, campaignstr= str(epicID), str(campaign)
     path = directory + "lightcurves/c" + campaignstr + "/"  + epicIDstr[0:4] + "00000/" + epicIDstr[4:6] + "000/"
     path += "ktwo" + epicIDstr + "-c0" + campaignstr + "_lpd-lc" + tail + ".fits"
+    if campaign == 3 or campaign == "3":
+        def find_c3(epic):
+            if os.path.isfile(directory + "c3/k2c3_1/ktwo" + str(epic) + "-c03_llc.fits") == True:
+                return directory + "c3/k2c3_1/ktwo" + str(epic) + "-c03_llc.fits"
+            elif os.path.isfile(directory + "c3/k2c3_2/ktwo" + str(epic) + "-c03_llc.fits") == True:
+                return directory + "c3/k2c3_2/ktwo" + str(epic) + "-c03_llc.fits"
+            else: #is in third set os.path.isfile(directory + "c3/k2c3_3/ktwo" + str(epic) + "-c03_llc.fits") == True:
+                return directory + "c3/k2c3_3/ktwo" + str(epic) + "-c03_llc.fits"
+        path = find_c3(epicID)
     return path
 
 def clip(epicID, campaign, period, center, separation, pwidth, swidth, initial_time, outpath, directory="/k2_data/",fn=''):
