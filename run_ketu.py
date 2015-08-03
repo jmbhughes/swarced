@@ -6,7 +6,7 @@ python run.py EPIC_ID CAMPAIGN_NUMBER PATH_TO_QUERY
 The path to query should have an appropriate query file. You can see the 
 form_query.ipynb notebook to build those. The result will be a pickled
 file with just the results from the last step of the ketu pipeline. 
-
+    
 Using this naming convention, you can only have one query for a particular
 epicID in each location or else it will be overwritten!
 
@@ -29,9 +29,12 @@ def main(argv):
         return time.time()-start
     #except:
     except StopIteration:
+        print(str(epicID) + " failed")
         f = open(skipfile,"a")
         f.write(str(epicID) + "\n")
         f.close()
-
+    f = open("/mnt/k2_data/test_log.txt","a")
+    f.write(str(epicID) + " " + query_path +"\n")
+    f.close()
 if __name__ == "__main__":
     main(sys.argv[1:])

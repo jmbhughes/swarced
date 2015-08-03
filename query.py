@@ -1,6 +1,7 @@
 import pickle
 from data import get_lc_path
-import numpy as np
+import numpy as np 
+
 def build_query(epicID, campaign, directory,basispath,catalogpath,time_spacing=0.02, durations=[0.05,0.1,0.2]\
  ,min_period = 0.5,max_period=70.0,initial_time = 1975.,tail=''):
     '''Allows the construction of a customized query
@@ -73,29 +74,34 @@ def get_planet_default_injected(fn,campaign,directory,ebperiod):
         campaign--the K2 campaign of that EPIC designation
         directory--this is the path to where the lightcurves folder is: on linux '/k2_data/'; on macs '/Volumes/k2_data/'
     '''
-    if 70 - ebperiod*np.sqrt(8) < 0:
-        print(fn, " has an unusable period")
-        return False
+    #if 70 - ebperiod*np.sqrt(8) < 0:
+    #    print(fn, " has an unusable period")
+    #    return False
+    #else:
+    campaign = str(campaign)
+    q = dict(
+        light_curve_file = fn,
+        initial_time=2065.,
+        basis_file= directory + "elcs/c1.h5",
+        nbasis=150,
+        catalog_file= directory +"catalogs/epic.h5",
+        time_spacing=0.02,
+        durations=[0.05, 0.1, 0.2],
+        min_period=0.5,#ebperiod*np.sqrt(8),
+        max_period=70.0,
+    )
+    if campaign == "0":
+        q['basis_file'] = directory + "elcs/c0.h5"
+        q['initial_time']= 1940.
+    elif campaign == "2":
+        q['basis_file'] = directory + "elcs/c2-norm.h5"
+        q['initial_time']=2065.
+    elif campaign== "1":
+        q['basis_file'] = directory + "elcs/c1.h5"
+        q['initial_time']=1980.
     else:
-        campaign = str(campaign)
-        q = dict(
-            light_curve_file = fn,
-            initial_time=2065.,
-            basis_file= directory + "elcs/c1.h5",
-            nbasis=150,
-            catalog_file= directory +"catalogs/epic.h5",
-            time_spacing=0.02,
-            durations=[0.05, 0.1, 0.2],
-            min_period=ebperiod*2.5,
-            max_period=70.0,
-        )
-        if campaign == "0":
-            q['basis_file'] = directory + "elcs/c0.h5"
-        elif campaign == "2":
-            q['basis_file'] = directory + "elcs/c2-norm.h5"
-        else:
-            q['basis_file'] = directory + "elcs/c?-norm.h5"
-        return q
+        q['basis_file'] = "/k2_data/elcs/c?-norm.h5"
+    return q
 
 def save(query, f):
     '''Saves a query in a pickled format with name f'''

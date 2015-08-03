@@ -1,3 +1,5 @@
+'''This module handles data retrieval from lightcurves, determination of the phase, and masking phased lightcurves'''
+
 from astropy.io import fits
 import numpy as np
 import shutil, os
@@ -37,7 +39,7 @@ def retrieve(epicID, campaign, directory="/k2_data/", tail="", injected=False,fn
                 return np.array(time), np.array(flux), transits
             else:
                 return time[m], flux[m], transits
-    else: #CAMPAIGN 3!
+    else: #CAMPAIGN 3! HACKISH!
         time, flux = f[1].data['TIME'] + f[1].header['BJDREFI'], f[1].data['PDCSAP_FLUX']
         quality = f[1].data['SAP_QUALITY']
         m = np.isfinite(time) * np.isfinite(flux) * (quality==0)
@@ -57,7 +59,7 @@ def get_lc_path(epicID, campaign, directory, tail=""):
     epicIDstr, campaignstr= str(epicID), str(campaign)
     path = directory + "lightcurves/c" + campaignstr + "/"  + epicIDstr[0:4] + "00000/" + epicIDstr[4:6] + "000/"
     path += "ktwo" + epicIDstr + "-c0" + campaignstr + "_lpd-lc" + tail + ".fits"
-    if campaign == 3 or campaign == "3":
+    if campaign == 3 or campaign == "3":#HACKISH!
         def find_c3(epic):
             if os.path.isfile(directory + "c3/k2c3_1/ktwo" + str(epic) + "-c03_llc.fits") == True:
                 return directory + "c3/k2c3_1/ktwo" + str(epic) + "-c03_llc.fits"
@@ -69,7 +71,7 @@ def get_lc_path(epicID, campaign, directory, tail=""):
     return path
 
 def clip(epicID, campaign, period, center, separation, pwidth, swidth, initial_time, outpath, directory="/k2_data/",fn=''):
-    '''Makes a new fits file for a lightcurve with EB eclipses removed
+    '''Makes a new fits file for a lightcurve with EB eclipse data removed
     epicID--the K2 object identification number
     campaign--which campaign this object belongs to
     period--the period of the EB in days
@@ -107,35 +109,59 @@ def clip_work(fn, period, center, separation, pwidth, swidth, initial_time):
     f.flush()
     f.close()
     
-def clip_by_median(epicID, campaign, period, center, outpath, initial_time, windowsize, directory="/k2_data/", fn=""):
+def clip_by_median(epicID, campaign, period, center, outpath, initial_time, windowsize, directory="/k2_data/", fn="",interpolate=True):
+    '''Similar to clip this function generates a lightcurve but instead of removing the EB it models it with a moving median and divides it out
+    epicID--the K2 object identification number
+    campaign--which campaign this object belongs to
+    period--the period of the EB in days
+    center--the center of one of the primary eclipses in BJD
+    initial_time--if you want to remove data before some time you can clip that too
+    outpath--the directory the clipped lightcurve should be stored in
+    directory--this is the path to where the lightcurves folder is: on linux '/k2_data/'; on macs '/Volumes/k2_data/'
+    fn--if fn is designated it will ignore the normal lightcurves folder and look at that specific file
+    interpolate--a dead keyword... NEAD TO REMOVE
+    '''
     def rolling_window(a, window):
         shape = a.shape[:-1] + (a.shape[-1] - window + 1, window)
         strides = a.strides + (a.strides[-1],)
         return np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
     if fn == '':
         fn = get_lc_path(epicID, campaign, directory)
-    newfn = outpath + fn.split('/')[-1].split(".")[0] + "_clip.fits"
+    #copy the file
+    newfn = outpath + fn.split('/')[-1].split(".")[0] + "_clipmed.fits"
     shutil.copy(fn, newfn)
     f = fits.open(newfn, mode='update')
-    aperture = np.argmin(f[2].data['cdpp6'])
+    aperture = np.argmin(f[2].data['cdpp6'])#determine which aperture has the best response
     time, flux = f[1].data['time'] + f[1].header['BJDREFI'], f[1].data['flux'][:,aperture]
-    #time, flux = time[time>initial_time], flux[time>initial_time]
+    m = np.isfinite(time) * np.isfinite(flux)#remove all nans
+    f[1].data = f[1].data[m]
+    time, flux = f[1].data['time'] + f[1].header['BJDREFI'], f[1].data['flux'][:,aperture]
     phase = find_phase(time, period, center)
-    phaseo, fluxo = zip(*sorted(zip(phase,flux), key= lambda pair: pair[0]))
-    phasemodel, fluxmodel = np.median(rolling_window(np.array([phaseo,fluxo]),windowsize), -1)
+    phaseo, fluxo = zip(*sorted(zip(phase,flux), key= lambda pair: pair[0]))#order the phase and flux by phase
+    phasemodel, fluxmodel = np.median(rolling_window(np.array([phaseo,fluxo]),windowsize), -1)#construct the moving median model
     newflux = []
+    f.close()
+    #Divide out the model by interpolating within the model
     for currphase, currflux in zip(phase, flux):
-        righti = np.searchsorted(phasemodel,[currphase,],'left')[0]
-        if righti-1 < 0:
-            lefti = len(phasemodel)-1
-            m,b = np.polyfit([phasemodel[lefti],phasemodel[righti]],[fluxmodel[lefti],fluxmodel[righti]],1)
-        else:
-            lefti = righti-1
-            m,b = np.polyfit(phasemodel[lefti:righti+1],fluxmodel[lefti:righti+1],1)
-        closest_flux = currphase * m + b
-        newflux.append(currflux/closest_flux)
+        if not np.isnan(currphase):
+            righti = np.searchsorted(phasemodel,[currphase,],'left')[0]
+            if righti == len(phasemodel):
+                righti = 0
+            if righti-1 < 0:
+                lefti = len(phasemodel)-1
+                m,b = np.polyfit([phasemodel[lefti],phasemodel[righti]],[fluxmodel[lefti],fluxmodel[righti]],1)
+            else:
+                lefti = righti-1
+                m,b = np.polyfit([phasemodel[lefti], phasemodel[righti]], [fluxmodel[lefti], fluxmodel[righti]],1)
+            closest_flux = currphase * m + b
+            newflux.append(currflux/closest_flux)
+            
+    f = fits.open(newfn, mode='update')
     newflux = np.array(newflux)
-    f[1].data['flux'][:,aperture] = newflux
+    #overwrite the existing flux values
+    for i in range(f[1].data['flux'].shape[1]):
+        f[1].data['flux'][:,i] = newflux
+    #mask by usable time
     mask = (time > initial_time)
     f[1].data['quality'][np.logical_not(mask)]= 16384
     m = (f[1].data['quality'] == 0 )

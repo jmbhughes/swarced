@@ -83,8 +83,6 @@ def plot_lc(epicID, campaign, directory="/k2_data/",mark_list=[],tail="",injecte
         time,flux = time[time>initial_time], flux[time>initial_time]
     fig = pl.figure(figsize=(10 * golden,10))
     pl.title("EPIC " + epicID, **title_font)
-    print(time)
-    print(flux)
     pl.plot(time,flux,'k',lw=0.3)####################
     pl.scatter(time,flux,c='darkslategrey',lw=0,s=30)#######################
     pl.xlabel("Time (BJD)", **axis_font)
@@ -101,7 +99,7 @@ def plot_lc(epicID, campaign, directory="/k2_data/",mark_list=[],tail="",injecte
     if ylimtype=="med":
            pl.ylim(np.median(flux)-0.5*np.std(flux),np.median(flux)+0.5*np.std(flux))
     elif ylimtype=="minmax":
-           pl.ylim(np.min(flux)-500,np.max(flux)+500)
+           pl.ylim(np.min(flux),np.max(flux))
     elif ylimtype=="pick":
         pl.ylim(min([np.min(flux),np.median(flux)-0.5*np.std(flux)]), 
                 max([np.max(flux),np.median(flux)+0.5*np.std(flux)]))

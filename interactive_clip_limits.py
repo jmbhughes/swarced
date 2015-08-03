@@ -1,7 +1,9 @@
+'''This tool allows the user to take a list of lightcurves and using an interactive tool declare whether the lightcurve is
+an EB or not and also mark the boundaries of the primary and secondary eclipses'''
+
 import numpy as np
 import matplotlib.pyplot as pl
 import sys, os, pickle, copy
-#sys.path.append("/Users/nbanale1-temp/Desktop/swarced")
 sys.path.append("../")
 import swarced as sw
 from matplotlib.widgets import Button, RadioButtons
@@ -19,8 +21,6 @@ blsreport = np.array(blsreport)
 print blsreport
 blsepic = np.array(blsreport[:,0],dtype=np.int)
 blsperiod = blsreport[:,1]
-#blsepic = np.array([int(f[0]) for f in blsreport])
-#blsperiod = np.array([f[1][0] for f in blsreport])
 
 running=True
 try:
@@ -35,8 +35,6 @@ except:
     limitsreport=[]
     limitsepic = []
 
-#print blsepic
-#print limitsepic
 ls = blsepic
 ls = np.array([epic for epic in ls if epic not in limitsepic])
 class Select:
