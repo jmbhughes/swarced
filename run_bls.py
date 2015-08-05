@@ -1,3 +1,33 @@
+'''A wrapper for BLS
+How to run:
+    1. generate a list of lightcurves with absolute paths in a text file
+    2. Make sure retrieve in data.py is suited for your use (i.e. it is
+    lightcurves from Foreman-Mackey formatting, not straight from STSCI)
+    3. Determine an initial_time that you want to include all lightcurve data
+    after from (e.g. in Campaign 2 the first several data points before 2456900
+    were always bad. If you give that time in JD anything before then is not
+    included in the BLS analysis
+    4. Decide where to save the files. 
+    5. nbins is the number of windows in the BLS code, used 5 for now. 
+    6. Run from the command line:
+        python run_bls.py /path/to/your/list/of/lcs #ofCAMPAIGN INITIAL_TIME
+        /where/to/save/the/output nbin
+
+        ex:
+        python run_bls.py /k2_data/all_c2_lcs 2 2456900 /k2_data/c2_eb/bls.pkl
+        5
+
+Note the output is a pickled list of tuples. Where each tuple is the
+abbreviated BLS response for that EPIC: (EPIC, (best_period, best_power, depth,
+q, in1, in2)) where 
+best_period is the best-fit period in the same units as time,
+best_power is the power at best_period,
+depth is the depth of the transit at best_period,
+q is the fractional transit duration,
+in1 is the bin index at the start of transit, and
+in2 is the bin index at the end of transit.
+ '''
+
 import os, pickle, bls, time, sys, data
 from astropy.io import ascii
 import numpy as np

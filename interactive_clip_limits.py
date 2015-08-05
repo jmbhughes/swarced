@@ -1,5 +1,31 @@
-'''This tool allows the user to take a list of lightcurves and using an interactive tool declare whether the lightcurve is
-an EB or not and also mark the boundaries of the primary and secondary eclipses'''
+'''This tool allows the user to take a list of lightcurves and using an
+interactive tool declare whether the lightcurve is an EB or not and also
+mark the boundaries of the primary and secondary eclipses
+
+How to run: 
+    1. BLS must be previously. Ideally you have filtered the results according
+    to stepwise_execution_template.ipynb. The output of filtering is at
+    blsreportpath. 
+    2. limitsreportpath is where you want to save the results of your
+    interactive clipping
+    3. Directory is wherever /k2_data/ has been mounted (e.g.
+    /Volumes/k2_data/, /k2_data/, /mnt/k2_data/, ~/k2/)
+    4. Run this by:
+        python interactive_clip_limits.py /path/to/bls /path/to/limits
+        /k2_data/
+        ex: python interactive_clip_limits.py /k2_data/c3_eb/ebcandidates.pkl
+        /k2_data/c3_eb/interactive_results.pkl /k2_data/
+
+Features:
+    The output of this is a pickled array of lists structured:
+    [EPIC ID, phase_width_of_primary, phase_width_of_secondary, period,
+    separation_between_primary_and_secondary, central_time_of_primary, mode]
+    Mode is which radio button you've selected for that file. 
+    The other nice feature of this is that you can exit while doing your
+    clipping and take a break. When you return (assuming you give it the exact
+    same commmand to run) your program will pick back up where you were. 
+
+'''
 
 import numpy as np
 import matplotlib.pyplot as pl

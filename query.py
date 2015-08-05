@@ -31,43 +31,43 @@ def build_query(epicID, campaign, directory,basispath,catalogpath,time_spacing=0
     )
     return q
 
-def get_planet_default(epicID,campaign,directory):
-    '''Format a default query for the ketu pipeline
-    key-words:
-        epicID--the EPIC designation for your target
-        campaign--the K2 campaign of that EPIC designation
-        directory--this is the path to where the lightcurves folder is: on linux '/k2_data/'; on macs '/Volumes/k2_data/'
-    '''
-    epicIDstr, campaignstr = str(epicID), str(campaign)
-    #Default path to lightcurve
-    path = get_lc_path(epicID, campaign, directory)
-    #Construct the dictionary query object
-    q = dict(
-        light_curve_file = path,
-        initial_time = 1980.,
-        #initial_time=1940.,
-        basis_file= "/k2_data/elcs/c1.h5",
-        nbasis=150,
-        catalog_file= "/k2_data/catalogs/epic.h5",
-        time_spacing=0.02,
-        durations=[0.05, 0.1, 0.2],
-        min_period=0.5,
-        max_period=70.0,
-    )
-    if campaign == "0":
-        q['basis_file'] = "/k2_data/elcs/c0.h5"
-        q['initial_time']= 1940.
-    elif campaign == "2":
-        q['basis_file'] = "/k2_data/elcs/c2-norm.h5"
-        q['initial_time']=2065.
-    elif campaign== "1":
-        q['basis_file'] = basis_file= "/k2_data/elcs/c1.h5"
-        q['initial_time']=1980.
-    else:
-        q['basis_file'] = "/k2_data/elcs/c?-norm.h5"
-    return q
+#def get_planet_default(epicID,campaign,directory):
+#    '''Format a default query for the ketu pipeline
+#    key-words:
+#        epicID--the EPIC designation for your target
+#       campaign--the K2 campaign of that EPIC designation
+#        directory--this is the path to where the lightcurves folder is: on linux '/k2_data/'; on macs '/Volumes/k2_data/'
+#    '''
+#    epicIDstr, campaignstr = str(epicID), str(campaign)
+#   #Default path to lightcurve
+#   path = get_lc_path(epicID, campaign, directory)
+#    #Construct the dictionary query object
+#    q = dict(
+#       light_curve_file = path,
+#        initial_time = 1980.,
+#        #initial_time=1940.,
+#        basis_file= "/k2_data/elcs/c1.h5",
+#        nbasis=150,
+#        catalog_file= "/k2_data/catalogs/epic.h5",
+#        time_spacing=0.02,
+#        durations=[0.05, 0.1, 0.2],
+#        min_period=0.5,
+#        max_period=70.0,
+#    )
+#    if campaign == "0":
+#        q['basis_file'] = "/k2_data/elcs/c0.h5"
+#        q['initial_time']= 1940.
+#    elif campaign == "2":
+#        q['basis_file'] = "/k2_data/elcs/c2-norm.h5"
+#        q['initial_time']=2065.
+#    elif campaign== "1":
+#        q['basis_file'] = basis_file= "/k2_data/elcs/c1.h5"
+#        q['initial_time']=1980.
+#    else:
+#        q['basis_file'] = "/k2_data/elcs/c?-norm.h5"
+#    return q
 
-def get_planet_default_injected(fn,campaign,directory,ebperiod):
+def get_planet_default(fn,campaign,directory,ebperiod):
     '''Format a default query for the ketu pipeline
     key-words:
         epicID--the EPIC designation for your target
