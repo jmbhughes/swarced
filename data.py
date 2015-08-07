@@ -159,7 +159,7 @@ def clip_by_median(epicID, campaign, period, center, outpath, initial_time, wind
                 lefti = righti-1
                 m,b = np.polyfit([phasemodel[lefti], phasemodel[righti]], [fluxmodel[lefti], fluxmodel[righti]],1)
             closest_flux = currphase * m + b
-            newflux.append(currflux/closest_flux)
+            newflux.append(currflux/closest_flux)#could change to subtraction
             
     f = fits.open(newfn, mode='update')
     newflux = np.array(newflux)

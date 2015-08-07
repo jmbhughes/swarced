@@ -1,3 +1,5 @@
+'''All of the plotting routines are stored here'''
+
 import data
 import matplotlib.pyplot as pl
 import numpy as np
@@ -43,16 +45,28 @@ def plot_periodogram(epicID,result,pickled=True,ylim=(0,0)):
     pl.show()
 
 def phase(epicID,campaign,period, t0, directory="/k2_data/",tail="",initial_time=0,fn='',save_path = ''):
+    '''Plots a period folded curve
+    epicID--the K2 object ID for the periodogram
+    campaign--which K2 campaign the data is from
+    period--the period you want to fold on
+    t0--a central eclipse time for the primary
+    directory--where k2_data is
+    tail--any addition to the filename at the end
+    initial_time--any data before this time will not be plotted
+    fn--if given it loads the data from this filename instead of the default unedited lightcurve
+    save_path--if given it will save an image of the plot here instead of actually plot
+    '''
     plot_phase(epicID,campaign,period, t0, directory=directory,tail=tail,initial_time=initial_time,fn=fn, save_path=save_path)
     
 def plot_phase(epicID,campaign,period, t0, directory ="/k2_data/",tail="",initial_time=0,fn='',raw=False, save_path=''):
-    '''Plots a period folded curve'''
+    '''see phase'''
     time, flux = data.retrieve(epicID,campaign,directory,tail,fn=fn,raw=raw)
     if initial_time != 0:
         time,flux = time[time>initial_time], flux[time>initial_time]
     plot_phase_work(time, period, t0, flux, "EPIC " + str(epicID) + ":period={0:.3f}, t0={1:.6f}".format(period,t0),save_path=save_path)
     
 def plot_phase_work(time, period, center, flux, title,save_path=''):
+    '''see phase'''
     fig = pl.figure(figsize=(10* golden,10))
     pl.title(title, **title_font)
     phase = data.find_phase(time, period, center)
@@ -67,13 +81,27 @@ def plot_phase_work(time, period, center, flux, title,save_path=''):
         pl.close()
     
 def lightcurve(epicID, campaign, directory="/k2_data/",mark_list=[],tail="",injected=False,ylimtype="minmax",xlim=[0,0],initial_time = 0,fn='',raw=False, save_path =''):
+    '''Plots a lightcurve
+    epicID--the K2 object ID for the periodogram
+    campaign--which K2 campaign the data is from
+    directory--where k2_data is
+    tail--any addition to the filename at the end
+    initial_time--any data before this time will not be plotted
+    fn--if given it loads the data from this filename instead of the default unedited lightcurve
+    save_path--if given it will save an image of the plot here instead of actually plot
+    mark_list--if given a list of times will plot stars at those times
+    injected--if true it will look in the fits file for injection time and plot stars there
+    ylimtype--how to set the ylimits, minmax is the minimum and maximum flux whereas med sets them as half a standard deviation from the median flux
+    xlim--the time range to plot for
+    raw--ALWAYS SET FALSE
+    '''
     plot_lc(epicID, campaign,
             directory=directory,mark_list=mark_list,tail=tail,
             injected=injected,ylimtype=ylimtype,xlim=xlim,initial_time = initial_time,
             fn=fn,raw=raw, save_path=save_path)
 
 def plot_lc(epicID, campaign, directory="/k2_data/",mark_list=[],tail="",injected=False,ylimtype="med",xlim=[0,0],initial_time = 0,fn='',raw=False,save_path=''):
-    '''Plots the best lightcurve from photometry'''
+    '''see lightcurve'''
     epicID,campaign = str(epicID),str(campaign)
     if not injected:
         time, flux = data.retrieve(epicID,campaign,directory,tail,fn=fn,raw=raw)

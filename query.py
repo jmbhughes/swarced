@@ -1,3 +1,4 @@
+'''Ketu requires a query file for each run. This module handles creating and saving those'''
 import pickle
 from data import get_lc_path
 import numpy as np 

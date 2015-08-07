@@ -1,3 +1,5 @@
+'''This is a wrapper for a ketu pipeline run'''
+
 import ketu
 
 def analyze(query,cache=False):

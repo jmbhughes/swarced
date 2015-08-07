@@ -1,4 +1,11 @@
-# Script to be launched with:  python -m scoop --tunnel --hostfile ../hosts.txt --python-interpreter 'python' -p /mnt/k2_data/swarced/ scoop_ketu.py /mnt/k2_data/injection_trial_three/ /mnt/k2_data/injection_trial_three/skips 2
+'''This tool runs ketu on a directory of files using a network of computers
+the query_dir is the path to the directory where all the query files are for your run
+the skipfile is just a text file to note any lightcurves skipped over
+campaign is the campaign of all the data... all data must be from one campaign
+Script to be launched with:  
+python -m scoop --tunnel --hostfile ../hosts.txt --python-interpreter 'python' -p /mnt/k2_data/swarced/ scoop_ketu.py /mnt/k2_data/injection_trial_three/ /mnt/k2_data/injection_trial_three/skips 2
+python -m scoop --tunnel --hostfile /path/to/host/file --python-interpreter 'python' -p /path/to/this/directory/on/remote/computer scoop_ketu.py /path/to/directory/of/queries/on/remote/computer /path/to/skip/file/on/remote/computer campaign
+'''
 
 import scoop, socket, time,sys
 import numpy as np 
